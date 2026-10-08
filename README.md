@@ -1,2 +1,6 @@
-# SSC-CGL-studies-tracker
-My SSC CGL study tracker
+<link rel="manifest" href="manifest.json">
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js');
+  }
+</script>
