@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111827">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SSC CGL 2027">
+<link rel="manifest" href="manifest.webmanifest">
+<title>SSC CGL 2027</title>
+<style>
+:root{--bg:#f4f6f8;--card:#fff;--ink:#111827;--muted:#6b7280;--line:#e5e7eb;--accent:#111827;--ok:#166534;--okbg:#dcfce7}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+header{background:var(--accent);color:#fff;padding:18px 16px 14px;position:sticky;top:0;z-index:5}.brand{font-size:21px;font-weight:800}.date{font-size:12px;color:#d1d5db;margin-top:4px}
+main{max-width:760px;margin:auto;padding:12px 12px 90px}.page{display:none}.page.on{display:block}
+nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:7px 4px calc(7px + env(safe-area-inset-bottom));z-index:10}
+nav button{border:0;background:none;color:#6b7280;font-size:11px;padding:6px 5px}.navico{display:block;font-size:20px}.active{color:#111827!important;font-weight:800}
+.card{background:var(--card);border-radius:16px;padding:15px;margin:10px 0;box-shadow:0 2px 9px #00000009}.hero{padding:18px}.big{font-size:34px;font-weight:900}.muted{color:var(--muted);font-size:12px}
+.bar{height:12px;background:#e5e7eb;border-radius:99px;overflow:hidden;margin:9px 0}.fill{height:100%;background:#111827;border-radius:99px;transition:.25s}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.stat{background:#fff;border-radius:14px;padding:13px}.stat b{font-size:20px}
+.task{display:flex;gap:11px;align-items:flex-start;border-bottom:1px solid var(--line);padding:13px 0}.task:last-child{border:0}.task input{width:22px;height:22px}.done .tasktext{text-decoration:line-through;color:#888}
+.badge{display:inline-block;background:#eef2f7;border-radius:7px;padding:3px 7px;font-size:10px;margin:4px 3px 0 0}
+button.primary{border:0;background:#111827;color:#fff;border-radius:10px;padding:11px 14px;font-weight:700}button.secondary{border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px 12px}
+input,select{width:100%;padding:11px;border:1px solid #d1d5db;border-radius:10px;background:#fff;margin:5px 0 11px;font-size:14px}
+label{font-size:12px;font-weight:700}.row{display:flex;gap:8px}.row>*{flex:1}
+.sectiontitle{font-size:17px;font-weight:850;margin:18px 2px 8px}.chapter{padding:11px 0;border-bottom:1px solid var(--line)}
+small{color:var(--muted)}.empty{text-align:center;padding:28px;color:var(--muted)}
+.login{max-width:430px;margin:14vh auto;padding:18px}.login h1{margin:0 0 5px}.hidden{display:none!important}
+</style>
+</head>
+<body>
+<header><div class="brand">📚 SSC CGL 2027</div><div class="date" id="date"></div></header>
+<main>
+<section id="login" class="page on">
+ <div class="card login">
+  <h1>Welcome</h1><p class="muted">Your personal SSC CGL study tracker.</p>
+  <label>Email / Username</label><input id="email" placeholder="Enter your email">
+  <label>Password</label><input id="pass" type="password" placeholder="Password">
+  <button class="primary" style="width:100%" onclick="localLogin()">Login / Create local account</button>
+  <p class="muted">Version 1 uses device storage. Cloud login can be connected after adding your Firebase/Supabase project credentials.</p>
+ </div>
+</section>
+
+<section id="home" class="page">
+ <div class="card hero"><small>TODAY'S PRODUCTIVITY</small><div class="big" id="todayPct">0%</div><div class="bar"><div class="fill" id="todayFill"></div></div><small id="todayCount">0/0 completed</small></div>
+ <div class="grid"><div class="stat"><b id="streak">0</b><div class="muted">🔥 Day streak</div></div><div class="stat"><b id="weekPct">0%</b><div class="muted">📊 Week</div></div></div>
+ <div class="sectiontitle">Today's Goals</div><div id="tasks"></div>
+ <button class="primary" onclick="go('add')">＋ Add Goal</button>
+</section>
+
+<section id="chapters" class="page">
+ <div class="card"><b>📚 SSC CGL Chapter Tracker</b><p class="muted">Update each chapter as you progress.</p></div>
+ <div id="chapterList"></div>
+</section>
+
+<section id="progress" class="page">
+ <div class="card"><b>📊 Progress</b><p class="muted">Weekly productivity and subject performance.</p></div>
+ <div id="progressList"></div>
+</section>
+
+<section id="add" class="page">
+ <div class="card"><h3>➕ Add Daily Goal</h3>
+ <label>Subject</label><select id="s"></select><label>Chapter / Topic</label><input id="t" placeholder="Percentage">
+ <label>Exact Daily Goal</label><input id="g" placeholder="Lecture 12 + 20 PYQs">
+ <label>Type</label><select id="ty"><option>Concept</option><option>Lecture</option><option>Notes</option><option>Practice</option><option>PYQ</option><option>Revision</option><option>Mock Test</option></select>
+ <label>Priority</label><select id="pr"><option>High</option><option>Medium</option><option>Low</option></select>
+ <button class="primary" onclick="add()">Save Goal</button></div>
+</section>
+
+<section id="settings" class="page">
+ <div class="card"><b>⚙️ Account</b><p id="userLabel" class="muted"></p><button class="secondary" onclick="logout()">Log out</button></div>
+ <div class="card"><b>☁️ Cloud Sync</b><p class="muted">The app is prepared for Firebase/Supabase authentication and cloud sync. It requires your own backend project credentials before cross-device login can be activated.</p></div>
+</section>
+</main>
+<nav>
+<button id="n-home" onclick="go('home')" class="active"><span class="navico">🏠</span>Today</button>
+<button id="n-chapters" onclick="go('chapters')"><span class="navico">📚</span>Chapters</button>
+<button id="n-progress" onclick="go('progress')"><span class="navico">📊</span>Progress</button>
+<button id="n-add" onclick="go('add')"><span class="navico">➕</span>Add</button>
+<button id="n-settings" onclick="go('settings')"><span class="navico">⚙️</span>More</button>
+</nav>
+
+<script>
+const subjects=["Mathematics","Reasoning","English","Physics","Chemistry","Biology","History","Geography","Polity","Economics","General Awareness","Current Affairs"];
+const chapters={
+"Mathematics":["Number System","Simplification","Percentage","Ratio & Proportion","Average","Profit & Loss","Discount","Simple Interest","Compound Interest","Partnership","Mixture & Alligation","Time & Work","Pipes & Cisterns","Time, Speed & Distance","Algebra","Geometry","Mensuration","Trigonometry","Data Interpretation"],
+"Reasoning":["Analogy","Classification","Series","Coding-Decoding","Blood Relation","Direction Sense","Ranking","Syllogism","Venn Diagram","Mathematical Operations","Missing Number","Counting Figures","Mirror Image","Water Image","Paper Folding","Embedded Figure","Figure Matrix"],
+"English":["Noun","Pronoun","Adjective","Verb","Adverb","Preposition","Conjunction","Articles","Tenses","Subject-Verb Agreement","Voice","Narration","Error Detection","Sentence Improvement","Fill in the Blanks","Cloze Test","Synonyms","Antonyms","One Word Substitution","Idioms & Phrases","Spelling","Vocabulary"],
+"Physics":["Units & Dimensions","Motion","Laws of Motion","Work Energy Power","Gravitation","Heat","Waves","Sound","Optics","Electricity","Magnetism","Modern Physics"],
+"Chemistry":["Matter","Atomic Structure","Periodic Table","Chemical Bonding","Acids Bases & Salts","Metals & Non-metals","Carbon Compounds","Chemical Reactions"],
+"Biology":["Cell","Tissues","Nutrition","Digestive System","Respiratory System","Circulatory System","Excretory System","Nervous System","Reproduction","Genetics","Plant Biology","Ecology","Diseases"],
+"History":["Ancient India","Medieval India","Modern India","Indus Valley","Vedic Period","Buddhism & Jainism","Maurya","Gupta","Delhi Sultanate","Mughal Empire","British Rule","Freedom Movement"],
+"Geography":["Earth & Solar System","Physical Geography","Climate","Rivers","Soils","Natural Vegetation","Agriculture","Industries","Indian Geography","World Geography"],
+"Polity":["Constitution","Preamble","Fundamental Rights","Fundamental Duties","DPSP","President","Prime Minister","Parliament","Supreme Court","Constitutional Bodies","Elections","Local Government"],
+"Economics":["Basic Economics","National Income","Money & Banking","Inflation","Fiscal Policy","Monetary Policy","Budget","Taxation","Poverty & Unemployment"],
+"General Awareness":["Static GK","Awards","Books & Authors","Sports","Important Days","National Parks","Currencies & Capitals","Organizations","Art & Culture"],
+"Current Affairs":["National","International","Science & Technology","Economy","Sports","Awards","Appointments","Government Schemes"]
+};
+const statuses=["Not Started","Learning","Notes Completed","Practice","PYQ","Revision","Strong"];
+let state=JSON.parse(localStorage.getItem("cgl2027")||'{"user":"","goals":[],"status":{}}');
+const key="cgl2027"; const today=()=>new Date().toISOString().slice(0,10);
+function save(){localStorage.setItem(key,JSON.stringify(state))}
+function esc(x){return String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
+function localLogin(){let e=document.getElementById("email").value.trim();if(!e)return alert("Enter your email or username.");state.user=e;save();showApp()}
+function showApp(){document.getElementById("login").classList.remove("on");document.getElementById("login").classList.add("hidden");go("home");document.getElementById("userLabel").textContent="Logged in as: "+state.user}
+function logout(){state.user="";save();location.reload()}
+function go(id){document.querySelectorAll(".page").forEach(x=>x.classList.remove("on"));document.getElementById(id).classList.add("on");document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));let b=document.getElementById("n-"+id);if(b)b.classList.add("active");render()}
+function add(){let t=document.getElementById("t").value.trim(),g=document.getElementById("g").value.trim();if(!t||!g)return alert("Enter topic and exact goal.");state.goals.push({id:Date.now(),date:today(),subject:s.value,topic:t,goal:g,type:ty.value,priority:pr.value,done:false});save();document.getElementById("t").value="";document.getElementById("g").value="";go("home")}
+function toggle(id){let x=state.goals.find(a=>a.id===id);if(x)x.done=!x.done;save();render()}
+function del(id){state.goals=state.goals.filter(x=>x.id!==id);save();render()}
+function renderHome(){let a=state.goals.filter(x=>x.date===today()),d=a.filter(x=>x.done).length,p=a.length?Math.round(d/a.length*100):0;todayPct.textContent=p+"%";todayFill.style.width=p+"%";todayCount.textContent=`${d}/${a.length} completed`;tasks.innerHTML=a.length?a.map(x=>`<div class="card task ${x.done?'done':''}"><input type="checkbox" ${x.done?'checked':''} onchange="toggle(${x.id})"><div style="flex:1"><div class="tasktext"><b>${esc(x.subject)}</b> — ${esc(x.topic)}<br>${esc(x.goal)}</div><span class="badge">${x.type}</span><span class="badge">${x.priority}</span></div><button class="secondary" onclick="del(${x.id})">×</button></div>`).join(""):'<div class="card empty">No goals yet. Add your first goal.</div>';renderWeek()}
+function renderWeek(){let now=new Date(),day=(now.getDay()+6)%7,m=new Date(now);m.setDate(now.getDate()-day);let ds=[];for(let i=0;i<7;i++){let d=new Date(m);d.setDate(m.getDate()+i);ds.push(d.toISOString().slice(0,10))}let a=state.goals.filter(x=>ds.includes(x.date)),d=a.filter(x=>x.done).length;let p=a.length?Math.round(d/a.length*100):0;weekPct.textContent=p+"%";streak.textContent=calcStreak()}
+function calcStreak(){let n=0,d=new Date();while(true){let k=d.toISOString().slice(0,10),a=state.goals.filter(x=>x.date===k);if(a.length&&a.every(x=>x.done)){n++;d.setDate(d.getDate()-1)}else break}return n}
+function renderChapters(){chapterList.innerHTML=Object.entries(chapters).map(([s,a])=>`<div class="card"><div class="sectiontitle">${s}</div>`+a.map(c=>{let k=s+"|"+c;return `<div class="chapter"><b>${c}</b><select onchange="state.status['${esc(k)}']=this.value;save()">${statuses.map(v=>`<option ${state.status[k]===v?'selected':''}>${v}</option>`).join("")}</select></div>`}).join("")+"</div>").join("")}
+function renderProgress(){progressList.innerHTML=subjects.map(s=>{let a=state.goals.filter(x=>x.subject===s),d=a.filter(x=>x.done).length,p=a.length?Math.round(d/a.length*100):0;return `<div class="card"><b>${s}</b><div class="bar"><div class="fill" style="width:${p}%"></div></div><small>${d}/${a.length} completed • ${p}%</small></div>`}).join("")}
+function render(){if(!state.user)return;renderHome();renderChapters();renderProgress()}
+document.getElementById("s").innerHTML=subjects.map(x=>`<option>${x}</option>`).join("");
+date.textContent=new Date().toLocaleDateString(undefined,{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+if(state.user)showApp();
+</script>
+</body></html>
