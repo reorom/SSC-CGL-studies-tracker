@@ -136,7 +136,8 @@ button.wide{width:100%;margin-top:6px;padding:13px}
 </section>
 
 <section id="assistant" class="page">
- <div class="card"><div class="mrow"><b>🤖 AI Study Assistant</b><button class="secondary" onclick="aiReset()">New chat</button></div><div class="row" style="margin-top:10px"><button class="secondary" id="aiSpk" onclick="aiToggleSpk()">🔊 Voice on</button><button class="secondary" id="aiLang" onclick="aiToggleLang()">🌐 English</button></div><p class="muted" style="margin:6px 0 0">Powered by Gemini. It knows your goals, mock scores and chapters.</p></div>
+ <div class="card"><div class="mrow"><b>🤖 AI Study Assistant</b><button class="secondary" onclick="aiReset()">New chat</button></div><div class="row" style="margin-top:10px"><button class="secondary" id="aiSpk" onclick="aiToggleSpk()">🔊 Voice on</button><button class="secondary" id="aiLang" onclick="aiToggleLang()">🌐 English</button><button class="secondary" onclick="aiVoicePanel()">🎙 Style</button></div>
+ <div id="aiVp" class="hidden" style="margin-top:10px"><label>Choose a voice (online / network / natural ones sound most human)</label><select id="aiVsel" onchange="aiVoicePick(this.value)"></select><button class="secondary" onclick="aiSay(aiLg==='bn-IN'?'নমস্কার! আমি তোমার পড়াশোনার সহকারী। চলো আজকের দিনটা কাজে লাগাই।':'Hi! I am your study assistant. Let us make today count.')">▶ Test voice</button></div><p class="muted" style="margin:6px 0 0">Powered by Gemini. It knows your goals, mock scores and chapters.</p></div>
  <div id="aiMsgs"></div>
  <div class="chips"><button class="secondary" onclick="aiSend('Plan my study for today using my data')">📅 Plan my day</button><button class="secondary" onclick="aiSend('Which subject should I focus on and why?')">🎯 What to focus on</button><button class="secondary" onclick="aiSend('Give me 5 practice MCQs on my weakest subject, answers at the end')">📝 Practice MCQs</button></div>
  <div id="aiVs"></div>
@@ -306,15 +307,22 @@ function aiUI(){document.getElementById("aiSpk").textContent=aiSpk?"🔊 Voice o
 function aiStatus(t){document.getElementById("aiVs").textContent=t||""}
 function aiToggleSpk(){aiSpk=!aiSpk;localStorage.setItem("cgl_spk",aiSpk?"1":"0");if(!aiSpk&&window.speechSynthesis)speechSynthesis.cancel();aiUI()}
 function aiToggleLang(){aiLg=aiLg==="bn-IN"?"en-IN":"bn-IN";localStorage.setItem("cgl_lg",aiLg);aiUI();aiStatus(aiLg==="bn-IN"?"Mic will listen in Bengali.":"Mic will listen in English.")}
+function aiVoices(l){return (window.speechSynthesis?speechSynthesis.getVoices():[]).filter(x=>x.lang.toLowerCase().replace("_","-").startsWith(l.slice(0,2)))}
+function aiScore(v){const nm=(v.name||"")+" "+(v.voiceURI||"");let n=0;if(/neural|natural|online|wavenet|studio/i.test(nm))n+=3;if(v.localService===false)n+=2;if(/network/i.test(nm))n+=2;if(/google/i.test(nm))n+=1;if(/^(en|bn)[-_]in/i.test(v.lang))n+=1;return n}
+function aiPick(l){const want=localStorage.getItem("cgl_v_"+l.slice(0,2)),vs=aiVoices(l);return vs.find(x=>(x.voiceURI||x.name)===want)||vs.slice().sort((a,b)=>aiScore(b)-aiScore(a))[0]}
+function aiVoicePanel(){const p=document.getElementById("aiVp");p.classList.toggle("hidden");if(p.classList.contains("hidden"))return;
+ const sel=document.getElementById("aiVsel"),vs=aiVoices(aiLg),cur=aiPick(aiLg);
+ sel.innerHTML=vs.length?vs.map(v=>`<option value="${esc(v.voiceURI||v.name)}"${cur&&(cur.voiceURI||cur.name)===(v.voiceURI||v.name)?" selected":""}>${esc(v.name)} (${esc(v.lang)}${v.localService===false||/network/i.test(v.voiceURI||"")?" • online":""})</option>`).join(""):"<option>No voices found for this language</option>"}
+function aiVoicePick(n){localStorage.setItem("cgl_v_"+aiLg.slice(0,2),n);aiSay(aiLg==="bn-IN"?"নমস্কার! আমি তোমার পড়াশোনার সহকারী।":"Hi! I am your study assistant. Let us make today count.")}
 function aiClean(t){return String(t).replace(/https?:\/\/\S+/g,"").replace(/[*_#`>|~]/g,"").replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}]/gu,"").replace(/^\s*[-•]\s+/gm,"").replace(/\s*\n+\s*/g,". ").replace(/([.!?।])(\s*[.!?।])+/g,"$1").replace(/\s+/g," ").trim()}
 function aiSay(t){
  if(!window.speechSynthesis)return aiStatus("Voice output is not supported in this browser.");
  speechSynthesis.cancel();
  const nb=(String(t).match(/[\u0980-\u09FF]/g)||[]).length,nl=(String(t).match(/[A-Za-z\u0980-\u09FF]/g)||[]).length,bn=nl>0&&nb/nl>0.3,lang=bn?"bn-IN":"en-IN",vs=speechSynthesis.getVoices();
- const v=vs.find(x=>x.lang.replace("_","-").toLowerCase()===lang.toLowerCase())||vs.find(x=>x.lang.toLowerCase().startsWith(lang.slice(0,2)));
+ const v=aiPick(lang);
  const parts=aiClean(t).match(/[^.!?।]+[.!?।]*\s*/g)||[];let cur="",chunks=[];
  parts.forEach(x=>{if((cur+x).length>180&&cur){chunks.push(cur);cur=x}else cur+=x});if(cur)chunks.push(cur);
- chunks.forEach(c=>{const u=new SpeechSynthesisUtterance(c);u.lang=lang;if(v)u.voice=v;u.rate=1;speechSynthesis.speak(u)});
+ chunks.forEach(c=>{const u=new SpeechSynthesisUtterance(c);u.lang=lang;if(v)u.voice=v;u.rate=0.95;u.pitch=1;speechSynthesis.speak(u)});
  if(bn&&!v)aiStatus("No Bengali voice found on this phone. Install Bengali in Google Text-to-speech settings.")}
 function aiShow(w,t){w.dataset.t=t;w.innerHTML=aiFmt(t)+'<div style="margin-top:8px"><button class="secondary lb" onclick="aiSay(this.closest(\'.ba\').dataset.t)">🔈 Listen</button><button class="secondary lb" onclick="window.speechSynthesis&&speechSynthesis.cancel()">⏹ Stop</button></div>';w.scrollIntoView({block:"nearest"});if(aiSpk)aiSay(t)}
 function aiListen(){
@@ -357,7 +365,7 @@ function aiErr(e){const m=String(e&&e.message||e);let h;
  return h+"<br><small>"+esc(m.slice(0,220))+"</small>"}
 async function aiSend(q){
  const inp=document.getElementById("aiIn");q=(typeof q==="string"?q:inp.value).trim();if(!q||aiBusy)return;inp.value="";
- aiBusy=true;aiAdd("u",esc(q));const w=aiAdd("a","Thinking…");let last;const vm=aiViaMic;aiViaMic=false;const bl=aiLg==="bn-IN"?"Reply in Bengali. ":"";const qq=q+((vm||bl)?" ("+bl+(vm?"Voice chat: short spoken style, under 80 words, no bullet points or symbols.":"")+")":"");
+ aiBusy=true;aiAdd("u",esc(q));const w=aiAdd("a","Thinking…");let last;const vm=aiViaMic;aiViaMic=false;const bl=aiLg==="bn-IN"?"Reply in Bengali. ":"";const qq=q+((vm||bl)?" ("+bl+(vm?"Voice chat: talk like a warm, friendly human teacher, with short natural sentences, simple words and contractions, under 80 words, no bullet points or symbols.":"")+")":"");
  for(let n=0;n<AI_MODELS.length;n++){
   try{const c=await aiInit();const r=await c.sendMessage(aiSent?qq:aiCtx()+"\n\nQuestion: "+qq);aiSent=true;aiShow(w,r.response.text());aiBusy=false;return}
   catch(e){last=e;if(/404|NOT_FOUND|not found|no longer|retired|deprecated|not supported/i.test(String(e&&e.message))&&aiMI<AI_MODELS.length-1){aiMI++;aiChat=null;continue}break}}
