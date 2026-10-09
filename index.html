@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#111827">
+<meta name="theme-color" content="#0a1128">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="SSC CGL 2027">
@@ -30,15 +30,41 @@ nav button{border:0;background:none;color:#6b7280;font-size:11px;padding:6px 5px
 button.primary{border:0;background:#111827;color:#fff;border-radius:10px;padding:11px 14px;font-weight:700}button.secondary{border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px 12px}
 input,select{width:100%;padding:11px;border:1px solid #d1d5db;border-radius:10px;background:#fff;margin:5px 0 11px;font-size:14px}
 label{font-size:12px;font-weight:700}.row{display:flex;gap:8px}.row>*{flex:1}
-.sectiontitle{font-size:17px;font-weight:850;margin:18px 2px 8px}.chapter{padding:11px 0;border-bottom:1px solid var(--line)}
+.sectiontitle{font-size:17px;font-weight:850;margin:18px 2px 8px;color:#e8ecff}.chapter{padding:11px 0;border-bottom:1px solid var(--line)}
 small{color:var(--muted)}.empty{text-align:center;padding:28px;color:var(--muted)}
 .login{max-width:430px;margin:8vh auto;padding:18px}.login h1{margin:0 0 5px}.hidden{display:none!important}
 .link{background:none;border:0;color:#2563eb;font-size:12px;padding:8px 0;text-decoration:underline}.msg{font-size:13px;color:#b91c1c;min-height:18px;margin:4px 0 8px}
 .sp{width:100%;height:auto;display:block}.up{color:#166534;font-weight:700}.down{color:#b91c1c;font-weight:700}.mrow{display:flex;justify-content:space-between;align-items:center;gap:8px}
+
+:root{--bg:#0a1128;--card:#111a36;--ink:#e8ecff;--muted:#8fa0cc;--line:#25325c;--accent:#0d1633}
+html{background:#0a1128}body{background:radial-gradient(1200px 600px at 50% -10%,#16245a 0,#0a1128 60%) no-repeat;min-height:100vh;color:var(--ink)}
+header{background:linear-gradient(90deg,#0d1633,#13224f);border-bottom:1px solid var(--line)}.sub{font-size:11px;color:#9fb0e0;letter-spacing:.6px;margin-top:2px}
+nav{background:#0d1531;border-top:1px solid var(--line)}nav button{color:#8fa0cc}.active{color:#60a5fa!important}
+.card{background:var(--card);border:1px solid var(--line);box-shadow:none}.stat{background:var(--card);border:1px solid var(--line)}
+.bar{background:#243055}.fill{background:linear-gradient(90deg,#22d3ee,#34d399)}
+button.primary{background:linear-gradient(90deg,#4f6ef7,#6d5cf6);color:#fff}button.secondary{background:#16224a;color:var(--ink);border:1px solid var(--line)}
+input,select{background:#0c1430;color:var(--ink);border:1px solid var(--line)}.badge{background:#1b2a5a;color:#b9c6f5}
+.task,.chapter{border-color:var(--line)}.done .tasktext{color:#6f7fae}small,.muted,.empty{color:var(--muted)}
+.sp polyline{stroke:#60a5fa}.sp circle{fill:#60a5fa}.sp text{fill:#cfd8ff}.sp line{stroke:#25325c}.up{color:#34d399}.down{color:#f87171}
+.hero2{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:18px;border-radius:18px;border:1px solid #2f4a9a;background:linear-gradient(120deg,#16255e,#243b8f 60%,#c46a2b 130%);margin:10px 0}
+.hero2 .h1{font-size:24px;font-weight:900;color:#ffd27a}.hero2 .q{font-size:13px;color:#dbe4ff;margin:4px 0 8px}.hero2 .dt{font-size:12px;color:#fff}
+.pill{background:#0d1633cc;border:1px solid #3b4f90;border-radius:14px;padding:8px 12px;text-align:center;font-size:22px;flex:none}.pill small{display:block;font-size:10px;color:#cbd5ff}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}.tile{border-radius:16px;padding:14px;border:1px solid;display:flex;flex-direction:column;gap:6px;min-height:110px}
+.tile b{font-size:13px}.tile .big{font-size:26px}.t1{background:#0f2a52;border-color:#2a6fc4;flex-direction:row;align-items:center;gap:14px;grid-column:span 2}
+.t2{background:#0c3a3a;border-color:#1fae8a}.t3{background:#3d1636;border-color:#b0407f}.t4{background:#231a52;border-color:#6a55e0;grid-column:span 2}
+.qa{display:grid;grid-template-columns:1fr 1fr;gap:10px}.qa button{border:1px solid #ffffff22;border-radius:14px;padding:14px;font-size:22px;color:#fff;display:flex;flex-direction:column;align-items:center;gap:4px}.qa span{font-size:12px;font-weight:700}
+.q1{background:#2b3a9a}.q2{background:#0f5fa8}.q3{background:#0f7a5a}.q4{background:#7a3a8f}
+.rings{display:grid;grid-template-columns:repeat(3,1fr);gap:14px 6px;text-align:center}.rg small{display:block;font-size:11px}
+.ring{--p:0;--c:#22d3ee;width:64px;height:64px;margin:0 auto;border-radius:50%;background:conic-gradient(var(--c) calc(var(--p)*1%),#243055 0);display:grid;place-items:center;position:relative}
+.ring::before{content:"";position:absolute;inset:7px;border-radius:50%;background:#0f1730}.ring span{position:relative;font-weight:800;font-size:13px}.t1 .ring{width:78px;height:78px;flex:none;margin:0}
+.stag{display:inline-block;padding:2px 8px;border-radius:7px;font-size:11px;font-weight:700;color:#fff;margin-right:4px}
+.gp{border-radius:14px;padding:12px 14px;margin:8px 0;border:1px solid;font-size:13px;line-height:1.7}.g1{background:#0c3324;border-color:#1f9d6a}.g2{background:#3a1430;border-color:#b0407f}.g3{background:#3a2a0c;border-color:#c98a1d}
+button.wide{width:100%;margin-top:6px;padding:13px}
+@media(min-width:700px){.tiles{grid-template-columns:repeat(4,1fr)}.t1,.t4{grid-column:auto}.rings{grid-template-columns:repeat(6,1fr)}.qa{grid-template-columns:repeat(4,1fr)}}
 </style>
 </head>
 <body>
-<header><div class="brand">📚 SSC CGL 2027</div><div class="date" id="date"></div></header>
+<header><div class="brand">📚 SSC CGL 2027</div><div class="sub">Dream • Plan • Study • Select</div><div class="date" id="date"></div></header>
 <main>
 <section id="login" class="page on">
  <div class="card login">
@@ -52,10 +78,19 @@ small{color:var(--muted)}.empty{text-align:center;padding:28px;color:var(--muted
 </section>
 
 <section id="home" class="page">
- <div class="card hero"><small>TODAY'S PRODUCTIVITY</small><div class="big" id="todayPct">0%</div><div class="bar"><div class="fill" id="todayFill"></div></div><small id="todayCount">0/0 completed</small></div>
- <div class="grid"><div class="stat"><b id="streak">0</b><div class="muted">🔥 Day streak</div></div><div class="stat"><b id="weekPct">0%</b><div class="muted">📊 Week</div></div></div>
- <div class="sectiontitle">Today's Goals</div><div id="tasks"></div>
- <button class="primary" onclick="go('add')">＋ Add Goal</button>
+ <div class="hero2"><div><div class="h1">🎯 Keep Going!</div><div class="q">“Small steps every day lead to big results.”</div><div class="dt">📅 <span id="todayLbl"></span></div></div><div class="pill">🔥 <b id="streak">0</b><small>Day streak</small></div></div>
+ <div class="tiles">
+  <div class="tile t1"><div class="ring" id="ovRing"><span id="ovPct">0%</span></div><div><b>Overall Progress</b><br><small id="ovTxt">0 / 0 goals done</small><br><small>📊 <span id="weekPct">0%</span> this week</small></div></div>
+  <div class="tile t2"><b>📅 Today's Plan</b><div class="big" id="todayPct">0%</div><div class="bar"><div class="fill" id="todayFill"></div></div><small id="todayCount">0/0 completed</small></div>
+  <div class="tile t3" onclick="go('mocks')"><b>🎯 Mock Test Score</b><div class="big" id="mockTile">–</div><small id="mockSub">No test yet</small></div>
+  <div class="tile t4" onclick="go('chapters')"><b>📚 Chapters Covered</b><div class="big" id="chapTile">0%</div><small id="chapSub"></small></div>
+ </div>
+ <div class="sectiontitle">✅ Daily Tracker</div><div id="tasks"></div>
+ <button class="primary wide" onclick="go('add')">＋ Add Daily Goal</button>
+ <div class="sectiontitle">⚡ Quick Actions</div>
+ <div class="qa"><button class="q1" onclick="go('add')">➕<span>Add Goal</span></button><button class="q2" onclick="go('mockadd')">📝<span>Mock Test</span></button><button class="q3" onclick="go('chapters')">📚<span>Chapters</span></button><button class="q4" onclick="go('progress')">📊<span>Progress</span></button></div>
+ <div class="sectiontitle">📊 Subject Progress</div><div class="card"><div class="rings" id="rings"></div></div>
+ <div class="sectiontitle">📈 Improvement &amp; Gaps</div><div id="gaps"></div>
 </section>
 
 <section id="chapters" class="page">
@@ -101,7 +136,7 @@ small{color:var(--muted)}.empty{text-align:center;padding:28px;color:var(--muted
 </section>
 </main>
 <nav>
-<button id="n-home" onclick="go('home')" class="active"><span class="navico">🏠</span>Today</button>
+<button id="n-home" onclick="go('home')" class="active"><span class="navico">🏠</span>Home</button>
 <button id="n-chapters" onclick="go('chapters')"><span class="navico">📚</span>Chapters</button>
 <button id="n-mocks" onclick="go('mocks')"><span class="navico">🎯</span>Mocks</button>
 <button id="n-progress" onclick="go('progress')"><span class="navico">📊</span>Progress</button>
@@ -162,12 +197,12 @@ function go(id){document.querySelectorAll(".page").forEach(x=>x.classList.remove
 function add(){let t=document.getElementById("t").value.trim(),g=document.getElementById("g").value.trim();if(!t||!g)return alert("Enter topic and exact goal.");state.goals.push({id:Date.now(),date:today(),subject:s.value,topic:t,goal:g,type:ty.value,priority:pr.value,done:false});save();document.getElementById("t").value="";document.getElementById("g").value="";go("home")}
 function toggle(id){let x=state.goals.find(a=>a.id===id);if(x)x.done=!x.done;save();render()}
 function del(id){state.goals=state.goals.filter(x=>x.id!==id);save();render()}
-function renderHome(){let a=state.goals.filter(x=>x.date===today()),d=a.filter(x=>x.done).length,p=a.length?Math.round(d/a.length*100):0;todayPct.textContent=p+"%";todayFill.style.width=p+"%";todayCount.textContent=`${d}/${a.length} completed`;tasks.innerHTML=a.length?a.map(x=>`<div class="card task ${x.done?'done':''}"><input type="checkbox" ${x.done?'checked':''} onchange="toggle(${x.id})"><div style="flex:1"><div class="tasktext"><b>${esc(x.subject)}</b> — ${esc(x.topic)}<br>${esc(x.goal)}</div><span class="badge">${x.type}</span><span class="badge">${x.priority}</span></div><button class="secondary" onclick="del(${x.id})">×</button></div>`).join(""):'<div class="card empty">No goals yet. Add your first goal.</div>';renderWeek()}
+function renderHome(){let a=state.goals.filter(x=>x.date===today()),d=a.filter(x=>x.done).length,p=a.length?Math.round(d/a.length*100):0;todayPct.textContent=p+"%";todayFill.style.width=p+"%";todayCount.textContent=`${d}/${a.length} completed`;tasks.innerHTML=a.length?a.map(x=>`<div class="card task ${x.done?'done':''}"><input type="checkbox" ${x.done?'checked':''} onchange="toggle(${x.id})"><div style="flex:1"><div class="tasktext"><span class="stag" style="background:${sc(x.subject)}">${esc(x.subject)}</span>${esc(x.topic)}<br>${esc(x.goal)}</div><span class="badge">${x.type}</span><span class="badge">${x.priority}</span></div><button class="secondary" onclick="del(${x.id})">×</button></div>`).join(""):'<div class="card empty">No goals yet. Add your first goal.</div>';renderWeek()}
 function renderWeek(){let now=new Date(),day=(now.getDay()+6)%7,m=new Date(now);m.setDate(now.getDate()-day);let ds=[];for(let i=0;i<7;i++){let d=new Date(m);d.setDate(m.getDate()+i);ds.push(ymd(d))}let a=state.goals.filter(x=>ds.includes(x.date)),d=a.filter(x=>x.done).length;let p=a.length?Math.round(d/a.length*100):0;weekPct.textContent=p+"%";streak.textContent=calcStreak()}
 function calcStreak(){let n=0,d=new Date();while(true){let k=ymd(d),a=state.goals.filter(x=>x.date===k);if(a.length&&a.every(x=>x.done)){n++;d.setDate(d.getDate()-1)}else break}return n}
 function renderChapters(){chapterList.innerHTML=Object.entries(chapters).map(([s,a])=>`<div class="card"><div class="sectiontitle">${s}</div>`+a.map(c=>{let k=s+"|"+c;return `<div class="chapter"><b>${c}</b><select onchange="state.status['${esc(k)}']=this.value;save()">${statuses.map(v=>`<option ${state.status[k]===v?'selected':''}>${v}</option>`).join("")}</select></div>`}).join("")+"</div>").join("")}
 function renderProgress(){progressList.innerHTML=subjects.map(s=>{let a=state.goals.filter(x=>x.subject===s),d=a.filter(x=>x.done).length,p=a.length?Math.round(d/a.length*100):0;return `<div class="card"><b>${s}</b><div class="bar"><div class="fill" style="width:${p}%"></div></div><small>${d}/${a.length} completed • ${p}%</small></div>`}).join("")}
-function render(){if(!state.user)return;renderHome();renderChapters();renderProgress();renderMocks()}
+function render(){if(!state.user)return;renderHome();renderDash();renderChapters();renderProgress();renderMocks()}
 const MK=["Quant","Reasoning","English","GA"];
 const MKL={Quant:"Quantitative Aptitude",Reasoning:"Reasoning",English:"English",GA:"General Awareness"};
 const MKS={Quant:"Quant",Reasoning:"Reasoning",English:"English",GA:"GA"};
@@ -234,6 +269,24 @@ function saveMock(){
  go("mocks")}
 function delMock(id){if(!confirm("Delete this mock test?"))return;state.mocks=(state.mocks||[]).filter(x=>x.id!==id);save();render()}
 
+const SC={Mathematics:"#2563eb",Reasoning:"#7c3aed",English:"#d97706",Physics:"#0891b2",Chemistry:"#db2777",Biology:"#be185d",History:"#b45309",Geography:"#059669",Polity:"#4f46e5",Economics:"#0d9488","General Awareness":"#16a34a","Current Affairs":"#ea580c"};
+const sc=s=>SC[s]||"#475569";
+function renderDash(){
+ const $=id=>document.getElementById(id),G=state.goals,dn=G.filter(x=>x.done).length,p=G.length?Math.round(dn/G.length*100):0;
+ $("todayLbl").textContent=new Date().toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short",year:"numeric"});
+ $("ovRing").style.setProperty("--p",p);$("ovPct").textContent=p+"%";$("ovTxt").textContent=dn+" / "+G.length+" goals done";
+ const L=mockList();
+ if(L.length){const t=L[L.length-1];$("mockTile").textContent=f1(mTot(t))+"%";$("mockSub").textContent="Last test: "+fd(t.date)}else{$("mockTile").textContent="–";$("mockSub").textContent="No test yet"}
+ let all=0,cov=0,gaps=[];
+ Object.entries(chapters).forEach(([s,a])=>a.forEach(c=>{all++;if((state.status[s+"|"+c]||"Not Started")==="Not Started")gaps.push(s+" – "+c);else cov++}));
+ $("chapTile").textContent=Math.round(cov/all*100)+"%";$("chapSub").textContent=cov+" / "+all+" chapters started";
+ $("rings").innerHTML=subjects.map(s=>{const a=G.filter(x=>x.subject===s),d=a.filter(x=>x.done).length,q=a.length?Math.round(d/a.length*100):0;return `<div class="rg"><div class="ring" style="--p:${q};--c:${sc(s)}"><span>${q}%</span></div><small><b>${s.replace("General Awareness","GA").replace("Current Affairs","CA")}</b></small><small>${d}/${a.length}</small></div>`}).join("");
+ let h="";
+ if(L.length){const S=MK.map(k=>({k,av:L.reduce((z,t)=>z+mSub(t,k),0)/L.length})).sort((a,b)=>b.av-a.av);
+  h+=`<div class="gp g1"><b>💪 Your Strengths</b><br>${MKL[S[0].k]} (avg ${f1(S[0].av)}%)</div><div class="gp g2"><b>⚠️ Needs Improvement</b><br>${MKL[S[3].k]} (avg ${f1(S[3].av)}%)<br>${MKL[S[2].k]} (avg ${f1(S[2].av)}%)</div>`}
+ else h+='<div class="gp g1"><b>💪 Strengths &amp; weak areas</b><br>Add a mock test to see them here.</div>';
+ h+=`<div class="gp g3"><b>🕳️ Gaps Found</b><br>${gaps.length?gaps.slice(0,3).map(esc).join("<br>")+(gaps.length>3?`<br>+${gaps.length-3} more not started`:""):"No gaps. Great work!"}</div>`;
+ $("gaps").innerHTML=h}
 document.getElementById("mDate").value=today();
 document.getElementById("s").innerHTML=subjects.map(x=>`<option>${x}</option>`).join("");
 date.textContent=new Date().toLocaleDateString(undefined,{weekday:"long",day:"numeric",month:"long",year:"numeric"});
