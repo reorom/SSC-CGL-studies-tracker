@@ -32,7 +32,8 @@ input,select{width:100%;padding:11px;border:1px solid #d1d5db;border-radius:10px
 label{font-size:12px;font-weight:700}.row{display:flex;gap:8px}.row>*{flex:1}
 .sectiontitle{font-size:17px;font-weight:850;margin:18px 2px 8px}.chapter{padding:11px 0;border-bottom:1px solid var(--line)}
 small{color:var(--muted)}.empty{text-align:center;padding:28px;color:var(--muted)}
-.login{max-width:430px;margin:14vh auto;padding:18px}.login h1{margin:0 0 5px}.hidden{display:none!important}
+.login{max-width:430px;margin:8vh auto;padding:18px}.login h1{margin:0 0 5px}.hidden{display:none!important}
+.link{background:none;border:0;color:#2563eb;font-size:12px;padding:8px 0;text-decoration:underline}.msg{font-size:13px;color:#b91c1c;min-height:18px;margin:4px 0 8px}
 </style>
 </head>
 <body>
@@ -40,11 +41,12 @@ small{color:var(--muted)}.empty{text-align:center;padding:28px;color:var(--muted
 <main>
 <section id="login" class="page on">
  <div class="card login">
-  <h1>Welcome</h1><p class="muted">Your personal SSC CGL study tracker.</p>
-  <label>Email / Username</label><input id="email" placeholder="Enter your email">
-  <label>Password</label><input id="pass" type="password" placeholder="Password">
-  <button class="primary" style="width:100%" onclick="localLogin()">Login / Create local account</button>
-  <p class="muted">Version 1 uses device storage. Cloud login can be connected after adding your Firebase/Supabase project credentials.</p>
+  <h1>Welcome</h1><p class="muted">Login to see your data on any phone.</p>
+  <label>Email</label><input id="email" type="email" autocomplete="email" placeholder="Enter your email">
+  <label>Password</label><input id="pass" type="password" autocomplete="current-password" placeholder="Password (min 6 characters)">
+  <div class="msg" id="authMsg"></div>
+  <div class="row"><button class="primary" onclick="doLogin()">Login</button><button class="secondary" onclick="doSignup()">Create account</button></div>
+  <button class="link" onclick="doReset()">Forgot password?</button>
  </div>
 </section>
 
@@ -76,7 +78,7 @@ small{color:var(--muted)}.empty{text-align:center;padding:28px;color:var(--muted
 
 <section id="settings" class="page">
  <div class="card"><b>⚙️ Account</b><p id="userLabel" class="muted"></p><button class="secondary" onclick="logout()">Log out</button></div>
- <div class="card"><b>☁️ Cloud Sync</b><p class="muted">The app is prepared for Firebase/Supabase authentication and cloud sync. It requires your own backend project credentials before cross-device login can be activated.</p></div>
+ <div class="card"><b>☁️ Cloud Sync</b><p class="muted" id="syncStatus">☁️ Connecting…</p><p class="muted">Your goals and chapter progress are saved online. Log in on any phone with the same email to see them.</p></div>
 </section>
 </main>
 <nav>
@@ -105,24 +107,132 @@ const chapters={
 };
 const statuses=["Not Started","Learning","Notes Completed","Practice","PYQ","Revision","Strong"];
 let state=JSON.parse(localStorage.getItem("cgl2027")||'{"user":"","goals":[],"status":{}}');
-const key="cgl2027"; const today=()=>new Date().toISOString().slice(0,10);
-function save(){localStorage.setItem(key,JSON.stringify(state))}
+const key="cgl2027"; const ymd=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); const today=()=>ymd(new Date());
+function save(){localStorage.setItem(key,JSON.stringify(state));if(window.cloudSave)window.cloudSave()}
+function saveLocal(){localStorage.setItem(key,JSON.stringify(state))}
 function esc(x){return String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
-function localLogin(){let e=document.getElementById("email").value.trim();if(!e)return alert("Enter your email or username.");state.user=e;save();showApp()}
-function showApp(){document.getElementById("login").classList.remove("on");document.getElementById("login").classList.add("hidden");go("home");document.getElementById("userLabel").textContent="Logged in as: "+state.user}
-function logout(){state.user="";save();location.reload()}
+function authMsg(t){document.getElementById("authMsg").textContent=t}
+function friendly(e){const c=(e&&e.code)||"";
+ if(["auth/invalid-credential","auth/wrong-password","auth/user-not-found","auth/invalid-login-credentials"].includes(c))return "Wrong email or password.";
+ if(c==="auth/email-already-in-use")return "This email already has an account. Tap Login.";
+ if(c==="auth/weak-password")return "Password must be at least 6 characters.";
+ if(c==="auth/invalid-email")return "Enter a valid email address.";
+ if(c==="auth/network-request-failed")return "No internet. Check your connection.";
+ if(c==="auth/too-many-requests")return "Too many tries. Wait a few minutes.";
+ if(c==="auth/operation-not-allowed")return "Email/Password login is not enabled in Firebase yet.";
+ return "Something went wrong ("+(c||"unknown")+").";}
+function creds(){const e=document.getElementById("email").value.trim(),p=document.getElementById("pass").value;if(!e||!p){authMsg("Enter email and password.");return null}if(!window.fb){authMsg("Still connecting to the server. Check internet and try again.");return null}return {e,p}}
+async function doLogin(){const c=creds();if(!c)return;authMsg("Logging in…");try{await fb.login(c.e,c.p)}catch(err){authMsg(friendly(err))}}
+async function doSignup(){const c=creds();if(!c)return;authMsg("Creating account…");try{await fb.signup(c.e,c.p)}catch(err){authMsg(friendly(err))}}
+async function doReset(){const e=document.getElementById("email").value.trim();if(!e)return authMsg("Type your email above first.");if(!window.fb)return authMsg("Still connecting. Try again.");try{await fb.reset(e);authMsg("Password reset email sent. Check your inbox.")}catch(err){authMsg(friendly(err))}}
+document.getElementById("pass").addEventListener("keydown",e=>{if(e.key==="Enter")doLogin()});
+function showApp(){document.getElementById("login").classList.remove("on");document.getElementById("login").classList.add("hidden");document.querySelector("nav").classList.remove("hidden");go("home");document.getElementById("userLabel").textContent="Logged in as: "+state.user}
+function showLogin(){document.querySelectorAll(".page").forEach(x=>x.classList.remove("on"));const l=document.getElementById("login");l.classList.remove("hidden");l.classList.add("on");document.querySelector("nav").classList.add("hidden")}
+async function logout(){
+ if(!confirm("Log out of this phone?"))return;
+ try{if(window.cloudFlush)await window.cloudFlush()}catch(e){}
+ if(localStorage.getItem("cgl2027_pending")==="1"&&!confirm("Some recent changes are not uploaded yet (no internet?). Log out anyway and lose them?"))return;
+ try{if(window.fb)await fb.logout()}catch(e){}
+ localStorage.removeItem(key);localStorage.removeItem("cgl2027_pending");location.reload()}
+window.getState=()=>state;
+window.onSignedIn=(email)=>{state.user=email;saveLocal();document.getElementById("pass").value="";authMsg("");showApp()};
+window.onSignedOut=()=>{state.user="";saveLocal();showLogin()};
+window.applyCloud=(goals,status)=>{state.goals=goals;state.status=status;saveLocal();render()};
 function go(id){document.querySelectorAll(".page").forEach(x=>x.classList.remove("on"));document.getElementById(id).classList.add("on");document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));let b=document.getElementById("n-"+id);if(b)b.classList.add("active");render()}
 function add(){let t=document.getElementById("t").value.trim(),g=document.getElementById("g").value.trim();if(!t||!g)return alert("Enter topic and exact goal.");state.goals.push({id:Date.now(),date:today(),subject:s.value,topic:t,goal:g,type:ty.value,priority:pr.value,done:false});save();document.getElementById("t").value="";document.getElementById("g").value="";go("home")}
 function toggle(id){let x=state.goals.find(a=>a.id===id);if(x)x.done=!x.done;save();render()}
 function del(id){state.goals=state.goals.filter(x=>x.id!==id);save();render()}
 function renderHome(){let a=state.goals.filter(x=>x.date===today()),d=a.filter(x=>x.done).length,p=a.length?Math.round(d/a.length*100):0;todayPct.textContent=p+"%";todayFill.style.width=p+"%";todayCount.textContent=`${d}/${a.length} completed`;tasks.innerHTML=a.length?a.map(x=>`<div class="card task ${x.done?'done':''}"><input type="checkbox" ${x.done?'checked':''} onchange="toggle(${x.id})"><div style="flex:1"><div class="tasktext"><b>${esc(x.subject)}</b> — ${esc(x.topic)}<br>${esc(x.goal)}</div><span class="badge">${x.type}</span><span class="badge">${x.priority}</span></div><button class="secondary" onclick="del(${x.id})">×</button></div>`).join(""):'<div class="card empty">No goals yet. Add your first goal.</div>';renderWeek()}
-function renderWeek(){let now=new Date(),day=(now.getDay()+6)%7,m=new Date(now);m.setDate(now.getDate()-day);let ds=[];for(let i=0;i<7;i++){let d=new Date(m);d.setDate(m.getDate()+i);ds.push(d.toISOString().slice(0,10))}let a=state.goals.filter(x=>ds.includes(x.date)),d=a.filter(x=>x.done).length;let p=a.length?Math.round(d/a.length*100):0;weekPct.textContent=p+"%";streak.textContent=calcStreak()}
-function calcStreak(){let n=0,d=new Date();while(true){let k=d.toISOString().slice(0,10),a=state.goals.filter(x=>x.date===k);if(a.length&&a.every(x=>x.done)){n++;d.setDate(d.getDate()-1)}else break}return n}
+function renderWeek(){let now=new Date(),day=(now.getDay()+6)%7,m=new Date(now);m.setDate(now.getDate()-day);let ds=[];for(let i=0;i<7;i++){let d=new Date(m);d.setDate(m.getDate()+i);ds.push(ymd(d))}let a=state.goals.filter(x=>ds.includes(x.date)),d=a.filter(x=>x.done).length;let p=a.length?Math.round(d/a.length*100):0;weekPct.textContent=p+"%";streak.textContent=calcStreak()}
+function calcStreak(){let n=0,d=new Date();while(true){let k=ymd(d),a=state.goals.filter(x=>x.date===k);if(a.length&&a.every(x=>x.done)){n++;d.setDate(d.getDate()-1)}else break}return n}
 function renderChapters(){chapterList.innerHTML=Object.entries(chapters).map(([s,a])=>`<div class="card"><div class="sectiontitle">${s}</div>`+a.map(c=>{let k=s+"|"+c;return `<div class="chapter"><b>${c}</b><select onchange="state.status['${esc(k)}']=this.value;save()">${statuses.map(v=>`<option ${state.status[k]===v?'selected':''}>${v}</option>`).join("")}</select></div>`}).join("")+"</div>").join("")}
 function renderProgress(){progressList.innerHTML=subjects.map(s=>{let a=state.goals.filter(x=>x.subject===s),d=a.filter(x=>x.done).length,p=a.length?Math.round(d/a.length*100):0;return `<div class="card"><b>${s}</b><div class="bar"><div class="fill" style="width:${p}%"></div></div><small>${d}/${a.length} completed • ${p}%</small></div>`}).join("")}
 function render(){if(!state.user)return;renderHome();renderChapters();renderProgress()}
 document.getElementById("s").innerHTML=subjects.map(x=>`<option>${x}</option>`).join("");
 date.textContent=new Date().toLocaleDateString(undefined,{weekday:"long",day:"numeric",month:"long",year:"numeric"});
-if(state.user)showApp();
+if(state.user)showApp();else document.querySelector("nav").classList.add("hidden");
+</script>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAYpNeA5qJlJE_UR4_WbHRrATLluPIcf_k",
+  authDomain: "ssc-cgl-study-tracker.firebaseapp.com",
+  projectId: "ssc-cgl-study-tracker",
+  storageBucket: "ssc-cgl-study-tracker.firebasestorage.app",
+  messagingSenderId: "376263440418",
+  appId: "1:376263440418:web:0e6d751538dbaa9f8a327b"
+};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+let uid = null, unsub = null, timer = null;
+const PEND = "cgl2027_pending";
+const ref = () => doc(db, "users", uid);
+const setStatus = t => { const el = document.getElementById("syncStatus"); if (el) el.textContent = t; };
+const errStatus = e => setStatus(e && e.code === "permission-denied" ? "⚠️ Sync blocked: Firestore rules not set yet" : "⚠️ Offline. Changes will upload later");
+
+async function push() {
+  if (!uid) return;
+  const st = window.getState();
+  setStatus("☁️ Saving…");
+  try {
+    await setDoc(ref(), { goals: st.goals, status: st.status, updatedAt: Date.now() });
+    localStorage.removeItem(PEND);
+    setStatus("☁️ Synced");
+  } catch (e) { errStatus(e); }
+}
+window.cloudSave = () => {
+  if (!uid) return;
+  localStorage.setItem(PEND, "1");
+  clearTimeout(timer);
+  timer = setTimeout(push, 600);
+};
+window.cloudFlush = async () => {
+  clearTimeout(timer);
+  if (uid && localStorage.getItem(PEND) === "1") {
+    await Promise.race([push(), new Promise(r => setTimeout(r, 4000))]);
+  }
+};
+
+window.fb = {
+  login: (e, p) => signInWithEmailAndPassword(auth, e, p),
+  signup: (e, p) => createUserWithEmailAndPassword(auth, e, p),
+  reset: e => sendPasswordResetEmail(auth, e),
+  logout: () => signOut(auth)
+};
+
+onAuthStateChanged(auth, async user => {
+  if (unsub) { unsub(); unsub = null; }
+  if (!user) { uid = null; window.onSignedOut(); return; }
+  uid = user.uid;
+  window.onSignedIn(user.email);
+  setStatus("☁️ Syncing…");
+  try {
+    const snap = await getDoc(ref());
+    const pending = localStorage.getItem(PEND) === "1";
+    if (snap.exists() && !pending) {
+      const d = snap.data();
+      window.applyCloud(d.goals || [], d.status || {});
+      setStatus("☁️ Synced");
+    } else {
+      await push();
+    }
+    unsub = onSnapshot(ref(), s => {
+      if (s.metadata.hasPendingWrites || !s.exists()) return;
+      if (localStorage.getItem(PEND) === "1") return;
+      const d = s.data(), st = window.getState();
+      const g = d.goals || [], c = d.status || {};
+      if (JSON.stringify(g) !== JSON.stringify(st.goals) || JSON.stringify(c) !== JSON.stringify(st.status)) {
+        window.applyCloud(g, c);
+      }
+      setStatus("☁️ Synced");
+    }, errStatus);
+  } catch (e) { errStatus(e); }
+});
 </script>
 </body></html>
