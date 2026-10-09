@@ -61,6 +61,10 @@ input,select{background:#0c1430;color:var(--ink);border:1px solid var(--line)}.b
 .gp{border-radius:14px;padding:12px 14px;margin:8px 0;border:1px solid;font-size:13px;line-height:1.7}.g1{background:#0c3324;border-color:#1f9d6a}.g2{background:#3a1430;border-color:#b0407f}.g3{background:#3a2a0c;border-color:#c98a1d}
 button.wide{width:100%;margin-top:6px;padding:13px}
 @media(min-width:700px){.tiles{grid-template-columns:repeat(4,1fr)}.t1,.t4{grid-column:auto}.rings{grid-template-columns:repeat(6,1fr)}.qa{grid-template-columns:repeat(4,1fr)}}
+.bm,.ba{max-width:88%;padding:10px 13px;border-radius:16px;margin:8px 0;line-height:1.55;font-size:14px;word-wrap:break-word}
+.bm{margin-left:auto;background:linear-gradient(90deg,#4f6ef7,#6d5cf6);color:#fff;border-bottom-right-radius:4px}.ba{background:var(--card);border:1px solid var(--line);border-bottom-left-radius:4px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}.chips button{font-size:13px;padding:8px 11px;border-radius:99px}
+.aibar{position:sticky;bottom:calc(68px + env(safe-area-inset-bottom));display:flex;gap:8px;padding:8px 0;background:#0a1128}.aibar input{margin:0;flex:1}
 </style>
 </head>
 <body>
@@ -130,6 +134,13 @@ button.wide{width:100%;margin-top:6px;padding:13px}
  <div class="row"><button class="secondary" onclick="go('mocks')">Cancel</button><button class="primary" onclick="saveMock()">Save Mock</button></div></div>
 </section>
 
+<section id="assistant" class="page">
+ <div class="card"><div class="mrow"><b>🤖 AI Study Assistant</b><button class="secondary" onclick="aiReset()">New chat</button></div><p class="muted" style="margin:6px 0 0">Powered by Gemini. It knows your goals, mock scores and chapters.</p></div>
+ <div id="aiMsgs"></div>
+ <div class="chips"><button class="secondary" onclick="aiSend('Plan my study for today using my data')">📅 Plan my day</button><button class="secondary" onclick="aiSend('Which subject should I focus on and why?')">🎯 What to focus on</button><button class="secondary" onclick="aiSend('Give me 5 practice MCQs on my weakest subject, answers at the end')">📝 Practice MCQs</button></div>
+ <div class="aibar"><input id="aiIn" placeholder="Ask anything…" onkeydown="if(event.key==='Enter')aiSend()"><button class="primary" onclick="aiSend()">Send</button></div>
+</section>
+
 <section id="settings" class="page">
  <div class="card"><b>⚙️ Account</b><p id="userLabel" class="muted"></p><button class="secondary" onclick="logout()">Log out</button></div>
  <div class="card"><b>☁️ Cloud Sync</b><p class="muted" id="syncStatus">☁️ Connecting…</p><p class="muted">Your goals and chapter progress are saved online. Log in on any phone with the same email to see them.</p></div>
@@ -140,7 +151,7 @@ button.wide{width:100%;margin-top:6px;padding:13px}
 <button id="n-chapters" onclick="go('chapters')"><span class="navico">📚</span>Chapters</button>
 <button id="n-mocks" onclick="go('mocks')"><span class="navico">🎯</span>Mocks</button>
 <button id="n-progress" onclick="go('progress')"><span class="navico">📊</span>Progress</button>
-<button id="n-add" onclick="go('add')"><span class="navico">➕</span>Add</button>
+<button id="n-assistant" onclick="go('assistant')"><span class="navico">🤖</span>AI</button>
 <button id="n-settings" onclick="go('settings')"><span class="navico">⚙️</span>More</button>
 </nav>
 
@@ -287,6 +298,37 @@ function renderDash(){
  else h+='<div class="gp g1"><b>💪 Strengths &amp; weak areas</b><br>Add a mock test to see them here.</div>';
  h+=`<div class="gp g3"><b>🕳️ Gaps Found</b><br>${gaps.length?gaps.slice(0,3).map(esc).join("<br>")+(gaps.length>3?`<br>+${gaps.length-3} more not started`:""):"No gaps. Great work!"}</div>`;
  $("gaps").innerHTML=h}
+let aiChat=null,aiSent=false,aiBusy=false;
+const AI_SYS="You are a friendly study coach for an Indian SSC CGL 2027 aspirant. Reply in simple English, or in Bengali if the student writes in Bengali. Keep answers short and easy to read on a phone: short paragraphs or bullet points. Use the student's data when it is given. For practice questions, give MCQs and put the answers at the end. Never invent exam dates or official notification details; tell the student to check ssc.gov.in.";
+async function aiInit(){
+ if(aiChat)return aiChat;
+ const B="https://www.gstatic.com/firebasejs/12.0.0/";
+ const [A,I]=await Promise.all([import(B+"firebase-app.js"),import(B+"firebase-ai.js")]);
+ const app=A.initializeApp({apiKey:"AIzaSyAYpNeA5qJlJE_UR4_WbHRrATLluPIcf_k",authDomain:"ssc-cgl-study-tracker.firebaseapp.com",projectId:"ssc-cgl-study-tracker",storageBucket:"ssc-cgl-study-tracker.firebasestorage.app",messagingSenderId:"376263440418",appId:"1:376263440418:web:0e6d751538dbaa9f8a327b"},"ai-assistant");
+ const ai=I.getAI(app,{backend:new I.GoogleAIBackend()});
+ aiChat=I.getGenerativeModel(ai,{model:"gemini-2.5-flash",systemInstruction:AI_SYS}).startChat();
+ return aiChat}
+function aiCtx(){
+ const t=today(),td=state.goals.filter(x=>x.date===t),L=mockList();
+ let m="no mock tests yet";
+ if(L.length)m=L.length+" mocks, latest "+f1(mTot(L[L.length-1]))+"%, subject averages: "+MK.map(k=>MKL[k]+" "+f1(L.reduce((z,x)=>z+mSub(x,k),0)/L.length)+"%").join(", ");
+ const gaps=[];Object.entries(chapters).forEach(([s,a])=>a.forEach(c=>{if((state.status[s+"|"+c]||"Not Started")==="Not Started")gaps.push(s+": "+c)}));
+ return "My data. Today's goals: "+(td.map(x=>x.subject+" "+x.topic+(x.done?" (done)":" (pending)")).join("; ")||"none")+". Streak: "+calcStreak()+" days. Mock tests: "+m+". Chapters not started: "+gaps.length+" (for example "+gaps.slice(0,6).join("; ")+")."}
+function aiFmt(t){return esc(t).replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").replace(/^\s*[\*\-]\s+/gm,"• ").replace(/\n/g,"<br>")}
+function aiAdd(c,h){const e=document.createElement("div");e.className=c==="u"?"bm":"ba";e.innerHTML=h;const m=document.getElementById("aiMsgs");m.appendChild(e);e.scrollIntoView({block:"nearest"});return e}
+function aiErr(e){const m=String(e&&e.message||e);
+ if(/429|quota|RESOURCE_EXHAUSTED/i.test(m))return "Too many questions too quickly. Wait a minute and try again.";
+ if(/403|PERMISSION|not been used|disabled|API has not/i.test(m))return "Gemini is not enabled yet. In Firebase, open AI Logic → Settings and enable the Gemini Developer API.";
+ if(/import|fetch|network|Failed to/i.test(m))return "Could not load the assistant. Check your internet and try again.";
+ return "Something went wrong: "+esc(m.slice(0,140))}
+async function aiSend(q){
+ const inp=document.getElementById("aiIn");q=(typeof q==="string"?q:inp.value).trim();if(!q||aiBusy)return;inp.value="";
+ aiBusy=true;aiAdd("u",esc(q));const w=aiAdd("a","Thinking…");
+ try{const c=await aiInit();const r=await c.sendMessage(aiSent?q:aiCtx()+"\n\nQuestion: "+q);aiSent=true;w.innerHTML=aiFmt(r.response.text());w.scrollIntoView({block:"nearest"})}
+ catch(e){w.innerHTML=aiErr(e)}
+ aiBusy=false}
+function aiReset(){aiChat=null;aiSent=false;document.getElementById("aiMsgs").innerHTML="";aiAdd("a","Hi! 👋 I'm your SSC CGL study assistant. Ask me to explain a topic, plan your day, or make practice questions.")}
+aiReset();
 document.getElementById("mDate").value=today();
 document.getElementById("s").innerHTML=subjects.map(x=>`<option>${x}</option>`).join("");
 date.textContent=new Date().toLocaleDateString(undefined,{weekday:"long",day:"numeric",month:"long",year:"numeric"});
