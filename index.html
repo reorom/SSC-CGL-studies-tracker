@@ -34,6 +34,7 @@ label{font-size:12px;font-weight:700}.row{display:flex;gap:8px}.row>*{flex:1}
 small{color:var(--muted)}.empty{text-align:center;padding:28px;color:var(--muted)}
 .login{max-width:430px;margin:8vh auto;padding:18px}.login h1{margin:0 0 5px}.hidden{display:none!important}
 .link{background:none;border:0;color:#2563eb;font-size:12px;padding:8px 0;text-decoration:underline}.msg{font-size:13px;color:#b91c1c;min-height:18px;margin:4px 0 8px}
+.sp{width:100%;height:auto;display:block}.up{color:#166534;font-weight:700}.down{color:#b91c1c;font-weight:700}.mrow{display:flex;justify-content:space-between;align-items:center;gap:8px}
 </style>
 </head>
 <body>
@@ -76,6 +77,24 @@ small{color:var(--muted)}.empty{text-align:center;padding:28px;color:var(--muted
  <button class="primary" onclick="add()">Save Goal</button></div>
 </section>
 
+<section id="mocks" class="page">
+ <div class="card"><b>🎯 Mock Tests</b><p class="muted">SSC CGL Tier 1 • track every section and see your improvement.</p><button class="primary" onclick="go('mockadd')">＋ Add Mock Test</button></div>
+ <div id="mockDash"></div>
+</section>
+
+<section id="mockadd" class="page">
+ <div class="card"><h3>🎯 Add Mock Test</h3>
+ <label>Test name</label><input id="mName" placeholder="e.g. Tier 1 Mock 5">
+ <label>Date</label><input id="mDate" type="date">
+ <label>Marks per section (out of)</label><input id="mMax" type="number" inputmode="decimal" value="50">
+ <label>🧮 Quantitative Aptitude score</label><input id="mQuant" type="number" inputmode="decimal" step="0.5" placeholder="e.g. 38">
+ <label>🧩 Reasoning score</label><input id="mReasoning" type="number" inputmode="decimal" step="0.5" placeholder="e.g. 42">
+ <label>📖 English score</label><input id="mEnglish" type="number" inputmode="decimal" step="0.5" placeholder="e.g. 35">
+ <label>🌍 General Awareness score</label><input id="mGA" type="number" inputmode="decimal" step="0.5" placeholder="e.g. 30">
+ <p class="muted">Enter your final marks after negative marking. Enter 0 if you skipped a section.</p>
+ <div class="row"><button class="secondary" onclick="go('mocks')">Cancel</button><button class="primary" onclick="saveMock()">Save Mock</button></div></div>
+</section>
+
 <section id="settings" class="page">
  <div class="card"><b>⚙️ Account</b><p id="userLabel" class="muted"></p><button class="secondary" onclick="logout()">Log out</button></div>
  <div class="card"><b>☁️ Cloud Sync</b><p class="muted" id="syncStatus">☁️ Connecting…</p><p class="muted">Your goals and chapter progress are saved online. Log in on any phone with the same email to see them.</p></div>
@@ -84,6 +103,7 @@ small{color:var(--muted)}.empty{text-align:center;padding:28px;color:var(--muted
 <nav>
 <button id="n-home" onclick="go('home')" class="active"><span class="navico">🏠</span>Today</button>
 <button id="n-chapters" onclick="go('chapters')"><span class="navico">📚</span>Chapters</button>
+<button id="n-mocks" onclick="go('mocks')"><span class="navico">🎯</span>Mocks</button>
 <button id="n-progress" onclick="go('progress')"><span class="navico">📊</span>Progress</button>
 <button id="n-add" onclick="go('add')"><span class="navico">➕</span>Add</button>
 <button id="n-settings" onclick="go('settings')"><span class="navico">⚙️</span>More</button>
@@ -106,7 +126,7 @@ const chapters={
 "Current Affairs":["National","International","Science & Technology","Economy","Sports","Awards","Appointments","Government Schemes"]
 };
 const statuses=["Not Started","Learning","Notes Completed","Practice","PYQ","Revision","Strong"];
-let state=JSON.parse(localStorage.getItem("cgl2027")||'{"user":"","goals":[],"status":{}}');
+let state=JSON.parse(localStorage.getItem("cgl2027")||'{"user":"","goals":[],"status":{},"mocks":[]}');if(!state.mocks)state.mocks=[];
 const key="cgl2027"; const ymd=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); const today=()=>ymd(new Date());
 function save(){localStorage.setItem(key,JSON.stringify(state));if(window.cloudSave)window.cloudSave()}
 function saveLocal(){localStorage.setItem(key,JSON.stringify(state))}
@@ -137,8 +157,8 @@ async function logout(){
 window.getState=()=>state;
 window.onSignedIn=(email)=>{state.user=email;saveLocal();document.getElementById("pass").value="";authMsg("");showApp()};
 window.onSignedOut=()=>{state.user="";saveLocal();showLogin()};
-window.applyCloud=(goals,status)=>{state.goals=goals;state.status=status;saveLocal();render()};
-function go(id){document.querySelectorAll(".page").forEach(x=>x.classList.remove("on"));document.getElementById(id).classList.add("on");document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));let b=document.getElementById("n-"+id);if(b)b.classList.add("active");render()}
+window.applyCloud=(goals,status,mocks)=>{state.goals=goals;state.status=status;state.mocks=mocks||[];saveLocal();render()};
+function go(id){document.querySelectorAll(".page").forEach(x=>x.classList.remove("on"));document.getElementById(id).classList.add("on");document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));let b=document.getElementById("n-"+(id==="mockadd"?"mocks":id));if(b)b.classList.add("active");render()}
 function add(){let t=document.getElementById("t").value.trim(),g=document.getElementById("g").value.trim();if(!t||!g)return alert("Enter topic and exact goal.");state.goals.push({id:Date.now(),date:today(),subject:s.value,topic:t,goal:g,type:ty.value,priority:pr.value,done:false});save();document.getElementById("t").value="";document.getElementById("g").value="";go("home")}
 function toggle(id){let x=state.goals.find(a=>a.id===id);if(x)x.done=!x.done;save();render()}
 function del(id){state.goals=state.goals.filter(x=>x.id!==id);save();render()}
@@ -147,7 +167,74 @@ function renderWeek(){let now=new Date(),day=(now.getDay()+6)%7,m=new Date(now);
 function calcStreak(){let n=0,d=new Date();while(true){let k=ymd(d),a=state.goals.filter(x=>x.date===k);if(a.length&&a.every(x=>x.done)){n++;d.setDate(d.getDate()-1)}else break}return n}
 function renderChapters(){chapterList.innerHTML=Object.entries(chapters).map(([s,a])=>`<div class="card"><div class="sectiontitle">${s}</div>`+a.map(c=>{let k=s+"|"+c;return `<div class="chapter"><b>${c}</b><select onchange="state.status['${esc(k)}']=this.value;save()">${statuses.map(v=>`<option ${state.status[k]===v?'selected':''}>${v}</option>`).join("")}</select></div>`}).join("")+"</div>").join("")}
 function renderProgress(){progressList.innerHTML=subjects.map(s=>{let a=state.goals.filter(x=>x.subject===s),d=a.filter(x=>x.done).length,p=a.length?Math.round(d/a.length*100):0;return `<div class="card"><b>${s}</b><div class="bar"><div class="fill" style="width:${p}%"></div></div><small>${d}/${a.length} completed • ${p}%</small></div>`}).join("")}
-function render(){if(!state.user)return;renderHome();renderChapters();renderProgress()}
+function render(){if(!state.user)return;renderHome();renderChapters();renderProgress();renderMocks()}
+const MK=["Quant","Reasoning","English","GA"];
+const MKL={Quant:"Quantitative Aptitude",Reasoning:"Reasoning",English:"English",GA:"General Awareness"};
+const MKS={Quant:"Quant",Reasoning:"Reasoning",English:"English",GA:"GA"};
+const MKI={Quant:"🧮",Reasoning:"🧩",English:"📖",GA:"🌍"};
+const MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const f1=x=>(Math.round(x*10)/10).toFixed(1);
+const fd=s=>{const p=String(s).split("-");return p.length===3?(+p[2])+" "+MON[+p[1]-1]:s};
+const mSum=t=>Math.round(MK.reduce((s,k)=>s+(+t.subs[k]||0),0)*100)/100;
+const mTot=t=>mSum(t)/(4*t.max)*100;
+const mSub=(t,k)=>(+t.subs[k]||0)/t.max*100;
+function mockList(){return (state.mocks||[]).slice().sort((a,b)=>a.date===b.date?a.id-b.id:(a.date<b.date?-1:1))}
+function dlt(d){if(d===null||d===undefined||isNaN(d))return "";const c=d>=0?"up":"down";return `<span class="${c}">${d>=0?"▲ +":"▼ "}${f1(d)}%</span>`}
+function lineSvg(v,w,h,full){
+ const pad=full?26:4,n=v.length;
+ const X=i=>n===1?w/2:pad+i*(w-2*pad)/(n-1);
+ const Y=p=>h-pad-(Math.max(0,Math.min(100,p))/100)*(h-2*pad);
+ let s=`<svg class="sp" viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">`;
+ if(full){[0,25,50,75,100].forEach(g=>{s+=`<line x1="${pad}" x2="${w-pad}" y1="${Y(g)}" y2="${Y(g)}" stroke="#e5e7eb" stroke-width="1"/><text x="2" y="${Y(g)+3}" font-size="9" fill="#9ca3af">${g}</text>`})}
+ if(n>1)s+=`<polyline fill="none" stroke="#111827" stroke-width="${full?2.5:2}" stroke-linejoin="round" stroke-linecap="round" points="${v.map((p,i)=>X(i)+","+Y(p)).join(" ")}"/>`;
+ v.forEach((p,i)=>{s+=`<circle cx="${X(i)}" cy="${Y(p)}" r="${full?4:2.5}" fill="#111827"/>`;if(full&&(n<=8||i===n-1))s+=`<text x="${X(i)}" y="${Y(p)-8}" font-size="10" text-anchor="middle" fill="#111827">${Math.round(p)}</text>`});
+ return s+"</svg>"}
+function renderMocks(){
+ const el=document.getElementById("mockDash");if(!el)return;
+ const L=mockList();
+ if(!L.length){el.innerHTML='<div class="card empty">No mock tests yet.<br>Tap “Add Mock Test” after your next mock.</div>';return}
+ const tp=L.map(mTot),n=L.length,last=tp[n-1],avg=tp.reduce((a,b)=>a+b,0)/n,best=Math.max(...tp);
+ const dPrev=n>1?last-tp[n-2]:null,dFirst=n>1?last-tp[0]:null;
+ let h=`<div class="grid"><div class="stat"><b>${n}</b><div class="muted">Tests taken</div></div><div class="stat"><b>${f1(last)}%</b><div class="muted">Latest score</div></div><div class="stat"><b>${f1(avg)}%</b><div class="muted">Average</div></div><div class="stat"><b>${f1(best)}%</b><div class="muted">Best</div></div></div>`;
+ const trendNote=n>1?`vs previous test: ${dlt(dPrev)} &nbsp;•&nbsp; since first test: ${dlt(dFirst)}`:"Add one more test to see your trend";
+ h+=`<div class="card"><b>📈 Overall trend</b><div class="muted" style="margin:4px 0 6px">${trendNote}</div>${lineSvg(tp,320,150,true)}<div class="muted" style="display:flex;justify-content:space-between"><span>${fd(L[0].date)}</span><span>${fd(L[n-1].date)}</span></div></div>`;
+ const S=MK.map(k=>{const a=L.map(t=>mSub(t,k));const av=a.reduce((x,y)=>x+y,0)/n;return{k,a,av,last:a[n-1],best:Math.max(...a),dp:n>1?a[n-1]-a[n-2]:null,df:n>1?a[n-1]-a[0]:null}});
+ const weak=S.slice().sort((x,y)=>x.av-y.av)[0],strong=S.slice().sort((x,y)=>y.av-x.av)[0];
+ let ins="";
+ if(n>1){const imp=S.slice().sort((x,y)=>y.df-x.df)[0];ins+=`📈 Most improved: <b>${MKL[imp.k]}</b> ${dlt(imp.df)}<br>`}
+ ins+=`⚠️ Needs most focus: <b>${MKL[weak.k]}</b> (avg ${f1(weak.av)}%)<br>💪 Strongest: <b>${MKL[strong.k]}</b> (avg ${f1(strong.av)}%)`;
+ h+=`<div class="card"><b>🔎 Quick insights</b><p style="line-height:1.8;margin:8px 0 0">${ins}</p></div>`;
+ h+='<div class="sectiontitle">Subject-wise improvement</div>';
+ const lt=L[n-1];
+ S.forEach(s=>{
+  const badge=s===weak?'<span class="badge">⚠️ Focus</span>':(s===strong?'<span class="badge">💪 Strong</span>':'');
+  h+=`<div class="card"><div class="mrow"><b>${MKI[s.k]} ${MKL[s.k]}</b>${badge}</div>
+  <div class="mrow" style="margin-top:8px"><div><div class="big" style="font-size:26px">${f1(s.last)}%</div><div class="muted">latest: ${lt.subs[s.k]}/${lt.max}</div></div><div style="width:48%">${lineSvg(s.a,120,40,false)}</div></div>
+  <div class="bar"><div class="fill" style="width:${Math.max(0,Math.min(100,s.last))}%"></div></div>
+  <small>Avg ${f1(s.av)}% • Best ${f1(s.best)}%${s.dp!==null?" • vs previous "+dlt(s.dp):""}</small></div>`});
+ h+='<div class="sectiontitle">All tests</div>';
+ L.slice().reverse().forEach(t=>{
+  h+=`<div class="card"><div class="mrow"><div><b>${esc(t.name)}</b><div class="muted">${fd(t.date)}</div></div><div style="text-align:right"><b>${mSum(t)}/${4*t.max}</b><div class="muted">${f1(mTot(t))}%</div></div></div><div>${MK.map(k=>`<span class="badge">${MKS[k]} ${t.subs[k]}/${t.max}</span>`).join("")}</div><div style="text-align:right;margin-top:6px"><button class="secondary" onclick="delMock(${t.id})">Delete</button></div></div>`});
+ el.innerHTML=h}
+function saveMock(){
+ const max=parseFloat(document.getElementById("mMax").value);
+ if(!(max>0))return alert("Enter marks per section (for example 50).");
+ const subs={};
+ for(const k of MK){const raw=document.getElementById("m"+k).value.trim();const v=parseFloat(raw);
+  if(raw===""||isNaN(v))return alert("Enter your score for "+MKL[k]+" (0 if skipped).");
+  if(v>max)return alert(MKL[k]+" score cannot be more than "+max+".");
+  subs[k]=v}
+ const name=document.getElementById("mName").value.trim()||("Mock "+((state.mocks||[]).length+1));
+ const date=document.getElementById("mDate").value||today();
+ if(!state.mocks)state.mocks=[];
+ state.mocks.push({id:Date.now(),date,name,max,subs});
+ save();
+ document.getElementById("mName").value="";
+ MK.forEach(k=>document.getElementById("m"+k).value="");
+ go("mocks")}
+function delMock(id){if(!confirm("Delete this mock test?"))return;state.mocks=(state.mocks||[]).filter(x=>x.id!==id);save();render()}
+
+document.getElementById("mDate").value=today();
 document.getElementById("s").innerHTML=subjects.map(x=>`<option>${x}</option>`).join("");
 date.textContent=new Date().toLocaleDateString(undefined,{weekday:"long",day:"numeric",month:"long",year:"numeric"});
 if(state.user)showApp();else document.querySelector("nav").classList.add("hidden");
@@ -181,7 +268,7 @@ async function push() {
   const st = window.getState();
   setStatus("☁️ Saving…");
   try {
-    await setDoc(ref(), { goals: st.goals, status: st.status, updatedAt: Date.now() });
+    await setDoc(ref(), { goals: st.goals, status: st.status, mocks: st.mocks || [], updatedAt: Date.now() });
     localStorage.removeItem(PEND);
     setStatus("☁️ Synced");
   } catch (e) { errStatus(e); }
@@ -217,7 +304,7 @@ onAuthStateChanged(auth, async user => {
     const pending = localStorage.getItem(PEND) === "1";
     if (snap.exists() && !pending) {
       const d = snap.data();
-      window.applyCloud(d.goals || [], d.status || {});
+      window.applyCloud(d.goals || [], d.status || {}, d.mocks || []);
       setStatus("☁️ Synced");
     } else {
       await push();
@@ -226,9 +313,9 @@ onAuthStateChanged(auth, async user => {
       if (s.metadata.hasPendingWrites || !s.exists()) return;
       if (localStorage.getItem(PEND) === "1") return;
       const d = s.data(), st = window.getState();
-      const g = d.goals || [], c = d.status || {};
-      if (JSON.stringify(g) !== JSON.stringify(st.goals) || JSON.stringify(c) !== JSON.stringify(st.status)) {
-        window.applyCloud(g, c);
+      const g = d.goals || [], c = d.status || {}, m = d.mocks || [];
+      if (JSON.stringify(g) !== JSON.stringify(st.goals) || JSON.stringify(c) !== JSON.stringify(st.status) || JSON.stringify(m) !== JSON.stringify(st.mocks || [])) {
+        window.applyCloud(g, c, m);
       }
       setStatus("☁️ Synced");
     }, errStatus);
