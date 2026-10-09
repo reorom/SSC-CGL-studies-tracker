@@ -300,13 +300,15 @@ function renderDash(){
  $("gaps").innerHTML=h}
 let aiChat=null,aiSent=false,aiBusy=false;
 const AI_SYS="You are a friendly study coach for an Indian SSC CGL 2027 aspirant. Reply in simple English, or in Bengali if the student writes in Bengali. Keep answers short and easy to read on a phone: short paragraphs or bullet points. Use the student's data when it is given. For practice questions, give MCQs and put the answers at the end. Never invent exam dates or official notification details; tell the student to check ssc.gov.in.";
+const AI_MODELS=["gemini-2.5-flash","gemini-3-flash-preview","gemini-2.5-flash-lite"];let aiMI=0,aiLib=null;
 async function aiInit(){
  if(aiChat)return aiChat;
- const B="https://www.gstatic.com/firebasejs/12.0.0/";
- const [A,I]=await Promise.all([import(B+"firebase-app.js"),import(B+"firebase-ai.js")]);
- const app=A.initializeApp({apiKey:"AIzaSyAYpNeA5qJlJE_UR4_WbHRrATLluPIcf_k",authDomain:"ssc-cgl-study-tracker.firebaseapp.com",projectId:"ssc-cgl-study-tracker",storageBucket:"ssc-cgl-study-tracker.firebasestorage.app",messagingSenderId:"376263440418",appId:"1:376263440418:web:0e6d751538dbaa9f8a327b"},"ai-assistant");
- const ai=I.getAI(app,{backend:new I.GoogleAIBackend()});
- aiChat=I.getGenerativeModel(ai,{model:"gemini-2.5-flash",systemInstruction:AI_SYS}).startChat();
+ if(!aiLib){
+  const B="https://www.gstatic.com/firebasejs/12.0.0/";
+  const [A,I]=await Promise.all([import(B+"firebase-app.js"),import(B+"firebase-ai.js")]);
+  const app=A.initializeApp({apiKey:"AIzaSyAYpNeA5qJlJE_UR4_WbHRrATLluPIcf_k",authDomain:"ssc-cgl-study-tracker.firebaseapp.com",projectId:"ssc-cgl-study-tracker",storageBucket:"ssc-cgl-study-tracker.firebasestorage.app",messagingSenderId:"376263440418",appId:"1:376263440418:web:0e6d751538dbaa9f8a327b"},"ai-assistant");
+  aiLib={I,ai:I.getAI(app,{backend:new I.GoogleAIBackend()})}}
+ aiChat=aiLib.I.getGenerativeModel(aiLib.ai,{model:AI_MODELS[aiMI],systemInstruction:AI_SYS}).startChat();
  return aiChat}
 function aiCtx(){
  const t=today(),td=state.goals.filter(x=>x.date===t),L=mockList();
@@ -316,17 +318,19 @@ function aiCtx(){
  return "My data. Today's goals: "+(td.map(x=>x.subject+" "+x.topic+(x.done?" (done)":" (pending)")).join("; ")||"none")+". Streak: "+calcStreak()+" days. Mock tests: "+m+". Chapters not started: "+gaps.length+" (for example "+gaps.slice(0,6).join("; ")+")."}
 function aiFmt(t){return esc(t).replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").replace(/^\s*[\*\-]\s+/gm,"• ").replace(/\n/g,"<br>")}
 function aiAdd(c,h){const e=document.createElement("div");e.className=c==="u"?"bm":"ba";e.innerHTML=h;const m=document.getElementById("aiMsgs");m.appendChild(e);e.scrollIntoView({block:"nearest"});return e}
-function aiErr(e){const m=String(e&&e.message||e);
- if(/429|quota|RESOURCE_EXHAUSTED/i.test(m))return "Too many questions too quickly. Wait a minute and try again.";
- if(/403|PERMISSION|not been used|disabled|API has not/i.test(m))return "Gemini is not enabled yet. In Firebase, open AI Logic → Settings and enable the Gemini Developer API.";
- if(/import|fetch|network|Failed to/i.test(m))return "Could not load the assistant. Check your internet and try again.";
- return "Something went wrong: "+esc(m.slice(0,140))}
+function aiErr(e){const m=String(e&&e.message||e);let h;
+ if(/429|quota|RESOURCE_EXHAUSTED/i.test(m))h="Too many questions too quickly. Wait a minute and try again.";
+ else if(/403|PERMISSION|not been used|disabled|API has not|not enabled/i.test(m))h="Gemini is not enabled yet. In Firebase, open AI Logic → Settings and enable the Gemini Developer API.";
+ else if(/dynamically imported|Importing a module|module script/i.test(m))h="Could not load the assistant files. Check your internet and try again.";
+ else h="Something went wrong.";
+ return h+"<br><small>"+esc(m.slice(0,220))+"</small>"}
 async function aiSend(q){
  const inp=document.getElementById("aiIn");q=(typeof q==="string"?q:inp.value).trim();if(!q||aiBusy)return;inp.value="";
- aiBusy=true;aiAdd("u",esc(q));const w=aiAdd("a","Thinking…");
- try{const c=await aiInit();const r=await c.sendMessage(aiSent?q:aiCtx()+"\n\nQuestion: "+q);aiSent=true;w.innerHTML=aiFmt(r.response.text());w.scrollIntoView({block:"nearest"})}
- catch(e){w.innerHTML=aiErr(e)}
- aiBusy=false}
+ aiBusy=true;aiAdd("u",esc(q));const w=aiAdd("a","Thinking…");let last;
+ for(let n=0;n<AI_MODELS.length;n++){
+  try{const c=await aiInit();const r=await c.sendMessage(aiSent?q:aiCtx()+"\n\nQuestion: "+q);aiSent=true;w.innerHTML=aiFmt(r.response.text());w.scrollIntoView({block:"nearest"});aiBusy=false;return}
+  catch(e){last=e;if(/404|NOT_FOUND|not found|no longer|retired|deprecated|not supported/i.test(String(e&&e.message))&&aiMI<AI_MODELS.length-1){aiMI++;aiChat=null;continue}break}}
+ w.innerHTML=aiErr(last);aiBusy=false}
 function aiReset(){aiChat=null;aiSent=false;document.getElementById("aiMsgs").innerHTML="";aiAdd("a","Hi! 👋 I'm your SSC CGL study assistant. Ask me to explain a topic, plan your day, or make practice questions.")}
 aiReset();
 document.getElementById("mDate").value=today();
