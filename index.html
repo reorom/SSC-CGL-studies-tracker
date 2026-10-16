@@ -48,21 +48,30 @@ header input{margin-top:10px;border-radius:22px}
 .cal .td{background:var(--ac)}.cal .sel{outline:2px solid var(--cy)}
 .cal i{position:absolute;bottom:3px;left:50%;width:4px;height:4px;margin-left:-2px;border-radius:50%;background:var(--or)}
 .qa{display:grid;grid-template-columns:1fr 1fr;gap:8px}.qa button{background:var(--card2);border:1px solid var(--line)}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.big{font-size:22px}.top small{color:var(--mu)}
+.kpis{display:grid;gap:10px;grid-template-columns:1fr 1fr;margin-bottom:12px}.kpi{display:flex;gap:12px;align-items:center;margin:0}.kpi small{color:var(--mu);display:block}.kpi strong{font-size:22px;display:block}.kpi .gn{color:var(--gr)}.kpi .rd{color:var(--or)}.ic{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;font-size:22px;flex:none}.ringk{justify-content:center}
+.tiles{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-bottom:12px}.tile{border:1px solid;border-radius:14px;padding:12px}.tile small{color:var(--mu)}
+.pb{font-size:12px;padding:2px 10px;border-radius:6px}.pb.high{background:#5b1d24;color:#fca5a5}.pb.med{background:#5b4a14;color:#fcd34d}.pb.low{background:#14452f;color:#86efac}
+.sec{font-size:16px;margin:14px 0 8px}
+.tabs{display:flex;gap:6px;margin-bottom:10px}.tabs button{flex:1;background:#0d1442;border:1px solid var(--line);color:var(--mu);padding:8px 4px}.tabs button.on{background:var(--ac);color:#fff}
+.hrow{display:flex;justify-content:space-between;align-items:flex-start}#bell{position:relative;font-size:18px;padding:6px 12px}#bc{position:absolute;top:-6px;right:-4px;background:var(--rd);color:#fff;border-radius:10px;font-size:11px;padding:0 6px}#bc:empty{display:none}
+.qa .a1{background:#16a36a}.qa .a2{background:#6d43e0}.qa .a3{background:#1f6feb}.qa .a4{background:#e8731a}
+.modal{display:none;position:fixed;inset:0;background:#000a;align-items:center;padding:16px;z-index:20}
 nav .sec{display:none}nav .more{display:flex}.brand,.goal{display:none}.hero{background:linear-gradient(120deg,#2a2c8f,#4b2a8f 60%,#1d3d8f)}.hero h2{font-size:20px;margin:2px 0}.hero p{font-style:italic;color:#d6dcff}.hero small{color:#b9c3f5}
 @media(min-width:800px){
 body{padding:0 0 0 210px}
 nav{top:0;right:auto;width:210px;flex-direction:column;border-top:0;border-right:1px solid var(--line);padding:16px 8px}
 nav button{flex:none;flex-direction:row;gap:10px;font-size:15px;justify-content:flex-start;padding:0 14px;border-radius:10px;min-height:46px}
 nav button.on{background:var(--card2)}
-.stats{grid-template-columns:repeat(4,1fr)}nav .sec{display:flex}nav .more{display:none}.brand{display:block;padding:4px 10px 14px}.brand b{font-size:18px;display:block}.brand small{color:var(--mu)}.goal{display:block;margin-top:auto;padding:14px;border:1px solid var(--line);border-radius:14px;font-size:13px;color:var(--mu)}.goal b{color:var(--tx);font-size:15px}}
+.stats{grid-template-columns:repeat(4,1fr)}nav .sec{display:flex}nav .more{display:none}.kpis{grid-template-columns:repeat(4,1fr)}.brand{display:block;padding:4px 10px 14px}.brand b{font-size:18px;display:block}.brand small{color:var(--mu)}.goal{display:block;margin-top:auto;padding:14px;border:1px solid var(--line);border-radius:14px;font-size:13px;color:var(--mu)}.goal b{color:var(--tx);font-size:15px}}
 @media(prefers-reduced-motion:no-preference){.bar i{transition:width .5s}}
 </style>
 </head>
 <body>
-<header><h1 id="title">SSC CGL 2027</h1><p id="sub"></p><input id="q" type="search" placeholder="Search topics, tasks, mistakes…" aria-label="Search" oninput="doSearch(this.value)"></header>
+<header><div class="hrow"><div><h1 id="title">SSC CGL 2027</h1><p id="sub"></p></div><button class="ghost" id="bell" aria-label="Reminders" onclick="showRem()">🔔<span id="bc"></span></button></div><input id="q" type="search" placeholder="Search topics, tasks, mistakes…" aria-label="Search" oninput="doSearch(this.value)"></header>
 <main id="app"></main>
 <nav id="nav"></nav>
-<div id="toast" role="status"></div>
+<div id="toast" role="status"></div><div id="modal" class="modal" role="dialog" aria-modal="true"></div>
 <script>
 "use strict";
 const KEY="sscplanner.v1";
@@ -85,13 +94,14 @@ const DEFAULTS=()=>({
 let S;
 try{S=JSON.parse(localStorage.getItem(KEY))||DEFAULTS()}catch(e){S=DEFAULTS()}
 S.errors=S.errors||[];S.sessions=S.sessions||[];
+if(S.timer&&!S.timer.startedAt)S.timer={id:uid(),subj:S.timer.subj,chapter:"",cat:"Concept Learning",task:S.timer.task||"",target:60,startedAt:S.timer.start,accMs:0,paused:false,flag:0,day:iso(S.timer.start)};
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){toast("Could not save: storage is full or blocked.")}}
 function toast(m){const t=$("#toast");t.textContent=m;t.style.display="block";clearTimeout(toast.t);toast.t=setTimeout(()=>t.style.display="none",2600)}
 const subj=id=>S.subjects.find(s=>s.id===id)||{name:"Other",color:"#9aa8d8"};
 const subjOpts=sel=>S.subjects.map(s=>`<option value="${esc(s.id)}" ${s.id===sel?"selected":""}>${esc(s.name)}</option>`).join("");
 
 /* ---------- derived data (everything computed from records) ---------- */
-const minsOn=d=>S.tasks.filter(x=>x.date===d).reduce((a,x)=>a+(+x.actual||0),0)+(S.sessions||[]).filter(x=>x.date===d).reduce((a,x)=>a+x.mins,0);
+const minsOn=d=>S.tasks.filter(x=>x.date===d).reduce((a,x)=>a+(+x.actual||0),0)+(S.sessions||[]).filter(x=>x.date===d&&!x.linked).reduce((a,x)=>a+x.mins,0);
 const fmt=ms=>{const t=Math.floor(ms/1000);return Math.floor(t/3600)+":"+String(Math.floor(t%3600/60)).padStart(2,"0")+":"+String(t%60).padStart(2,"0")};
 function targetFor(d){const v=(S.settings.dayTargets||{})[new Date(d+"T12:00:00").getDay()];return v!==undefined&&v!==null&&v!==""?+v:S.settings.targetHours}
 function overdue(){return S.tasks.filter(x=>x.date<today()&&(x.status==="pending"||x.status==="partial")).sort((a,b)=>a.date<b.date?-1:1)}
@@ -130,8 +140,8 @@ function recommend(){
 }
 
 /* ---------- views ---------- */
-const VIEWS={home:["Home","⌂"],tracker:["Tracker","✓"],syllabus:["Syllabus","☰"],revision:["Revision","↻"],tests:["Tests","✎",1],errors:["Errors","✗",1],settings:["Settings","⚙",1]};
-const SEC=["tests","errors","settings","more"];
+const VIEWS={home:["Dashboard","⌂"],tracker:["Study Plan","☷"],timer:["Timer","◔"],syllabus:["Syllabus","☰",1],tasks:["Tasks","☑"],reports:["Reports","▤",1],revision:["Revision","↻",1],tests:["Mock Tests","✎",1],errors:["Errors","✗",1],settings:["Settings","⚙",1]};
+const SEC=["syllabus","reports","revision","tests","errors","settings","more"];
 const BRAND=`<div class="brand"><b>SSC CGL 2027</b><small>Study Planner &amp; Tracker</small></div>`;
 const GOAL=`<div class="goal"><b>Big Goals</b><br>Require daily action<br><i>"Discipline today = success tomorrow"</i></div>`;
 const QUOTES=["Small steps every day lead to big results.","Consistency beats intensity.","One focused hour is worth three distracted ones.","Revise today, remember on exam day.","Progress, not perfection.","Your future rank is built by today's tasks."];
@@ -164,28 +174,102 @@ function accLine(){
   const pts=ts.map((x,i)=>`${10+i*(260/(ts.length-1))},${90-(x.cor/x.att)*80}`).join(" ");
   return `<svg viewBox="0 0 280 100" width="100%" role="img" aria-label="Accuracy trend"><polyline points="${pts}" fill="none" stroke="#22d3ee" stroke-width="3"/></svg>`;
 }
-function renderHome(){
-  const st=stats(),tgt=targetFor(today())*60,pct=tgt?Math.min(100,Math.round(st.mins/tgt*100)):0;
-  const overall=st.total?Math.round(st.doneTopics/st.total*100):0,rec=recommend();
-  return `<div class="card hero"><small>${new Date().toLocaleDateString(undefined,{weekday:"short",day:"2-digit",month:"short",year:"numeric"})} · ${st.streak}-day streak</small><h2>${greet()}, Aspirant</h2><p>"${QUOTES[Math.floor(Date.now()/DAY)%QUOTES.length]}"</p></div>
-  <div class="stats">
-  <div class="card stat"><small>Daily target</small><strong>${+(st.mins/60).toFixed(1)} / ${targetFor(st.t)} h</strong><div class="bar"><i style="width:${pct}%"></i></div><small>${pct}% of target</small></div>
-  <div class="card stat"><small>Study time today</small><strong>${Math.floor(st.mins/60)}h ${st.mins%60}m</strong><small>${st.done}/${st.tasks.length} tasks done</small></div>
-  <div class="card stat"><small>Overall progress</small><strong>${overall}%</strong><div class="bar"><i style="width:${overall}%;background:linear-gradient(90deg,var(--pu),var(--ac))"></i></div><small>${st.doneTopics} / ${st.total} topics</small></div>
-  <div class="card stat"><small>Backlog</small><strong>${st.pending}</strong><small>pending topics</small></div></div>
-  <div class="grid"><div>
-  <div class="card"><h2>Subject progress</h2><div class="rings">${S.subjects.map(s=>{const x=subjectStats(s.id);return ring(x.pct,s.color,s.name.replace("General ","G. "),`${x.done}/${x.total}${x.acc!==null?" · "+x.acc+"% acc":""}`)}).join("")}</div>${st.total?"":`<p class="empty">Add topics in Syllabus to see progress.</p>`}</div>
-  <div class="card"><h2>Study time, last 7 days (min)</h2>${weekBars()}</div>
-  <div class="card"><h2>Accuracy trend</h2>${accLine()}</div></div><div>
-  ${timerCard()}${pendCard()}<div class="card"><h2>Today's plan</h2>${st.tasks.map(x=>taskRow(x,false)).join("")||`<p class="empty">Nothing planned for today. Add a task in Tracker.</p>`}<button class="ghost sm" onclick="go('tracker')">Open Tracker</button></div>
-  <div class="card"><h2>Study recommendation</h2>${rec?`<b>${esc(rec.title)}</b><p class="why">${esc(rec.why)}</p><button class="sm" style="margin-top:8px" onclick="addRec()">Add to today's plan</button>`:`<p class="empty">Add syllabus topics and I'll suggest what to study next.</p>`}<h2 style="margin-top:14px">Your next steps</h2>${steps().map((x,k)=>`<div class="row"><span class="tag">${k+1}</span><div class="g">${esc(x)}</div></div>`).join("")||`<p class="empty">You're caught up.</p>`}</div>
-  <div class="card"><h2>Keep going</h2><p>You're ${overall}% through your syllabus.</p><div class="bar"><i style="width:${overall}%;background:linear-gradient(90deg,var(--or),#fbbf24)"></i></div></div>
-  ${calCard()}${quickCard()}<div class="card"><h2>Next revisions</h2>${nextRev()}<button class="ghost sm" onclick="go('revision')">Open Revision</button></div>${weakCard()}${remCard()}</div></div>`;
+const hm=m=>Math.floor(m/60)+"h "+Math.round(m%60)+"m";
+const dur=m=>m>=60&&m%60===0?m/60+"h":m>=60?Math.floor(m/60)+"h "+m%60+"m":m+"m";
+const prLabel=p=>p==="med"?"Medium":p==="high"?"High":"Low";
+function bigRing(pct){const c=2*Math.PI*48;return `<svg viewBox="0 0 120 120" width="110" height="110" role="img" aria-label="${pct}% of target"><circle cx="60" cy="60" r="48" fill="none" stroke="#0d1442" stroke-width="12"/><circle cx="60" cy="60" r="48" fill="none" stroke="#34d399" stroke-width="12" stroke-linecap="round" stroke-dasharray="${c*pct/100} ${c}" transform="rotate(-90 60 60)"/><text x="60" y="68" text-anchor="middle" fill="#eaf0ff" font-size="24" font-weight="700">${pct}%</text></svg>`}
+function planTiles(){
+ const tg=S.settings.subjTargets||{},rows=S.subjects.filter(x=>+tg[x.id]>0);
+ if(!rows.length)return `<div class="card"><p class="empty">Set a daily target for each subject to see your plan here.</p><button class="ghost sm" onclick="go('settings')">Set subject targets</button></div>`;
+ const m=perSubj(today());
+ return `<div class="tiles">${rows.map(x=>{const d=m[x.id]||0,pc=Math.min(100,Math.round(d/(tg[x.id]*60)*100));return `<div class="tile" style="border-color:${x.color};background:linear-gradient(160deg,${x.color}30,transparent)"><b>${esc(x.name)}</b><br><small>${tg[x.id]}h / day</small><div class="bar"><i style="width:${pc}%;background:${x.color}"></i></div><div style="display:flex;justify-content:space-between;margin-top:6px"><small>${hm(d)} done</small><b>${pc}%</b></div></div>`}).join("")}</div><small style="color:var(--mu)">${allocText()}</small>`;
 }
+function runBanner(){const t=S.timer;if(!t)return"";const rem=t.target*60000-tmEl(t);return `<div class="card" style="border-color:var(--gr)"><b>Timer ${t.paused?"paused":"running"}</b> · ${esc(subj(t.subj).name)}${t.chapter?" → "+esc(t.chapter):""} · ${rem<0?"overtime":fmt(rem)+" left"} <button class="sm" style="margin-left:8px" onclick="go('timer')">Open timer</button></div>`}
+function renderHome(){
+ const st=stats(),tgtH=targetFor(st.t),tgt=tgtH*60,pct=tgt?Math.min(100,Math.round(st.mins/tgt*100)):0,rem=Math.max(0,tgt-st.mins),overall=st.total?Math.round(st.doneTopics/st.total*100):0,rec=recommend();
+ const tl=st.tasks.map(x=>`<div class="row ${x.status==="done"?"done":""}"><button class="chk" aria-label="Toggle complete" onclick="toggleTask('${x.id}')"></button><div class="g"><div class="t">${esc(subj(x.subj).name)} - ${esc(x.title)}</div></div><span class="pb ${x.prio}">${prLabel(x.prio)}</span><span style="min-width:40px;text-align:right">${dur(x.plan)}</span></div>`).join("");
+ return `<div class="top"><div><h2 class="big">Today's Study Plan</h2><small>${new Date().toLocaleDateString(undefined,{day:"numeric",month:"long",year:"numeric",weekday:"long"})}</small></div><button class="ghost sm" onclick="go('settings')">Edit Plan</button></div>
+ ${runBanner()}
+ <div class="kpis">
+ <div class="card kpi"><span class="ic" style="background:#2a4bd6">◎</span><div><small>Daily target</small><strong>${tgtH} hours</strong><small>Customizable</small></div></div>
+ <div class="card kpi"><span class="ic" style="background:#12896a">◷</span><div><small>Completed</small><strong>${hm(st.mins)}</strong><small class="gn">${pct}% of target</small></div></div>
+ <div class="card kpi"><span class="ic" style="background:#c2570c">▲</span><div><small>Remaining</small><strong>${hm(rem)}</strong><small class="rd">${st.streak}-day streak</small></div></div>
+ <div class="card kpi ringk">${bigRing(pct)}</div></div>
+ <h3 class="sec">Subject-wise Plan</h3>${planTiles()}
+ <div class="grid">
+ <div class="card"><div class="row" style="border:0;padding:0 0 6px"><h2 class="g" style="margin:0">Today's Tasks</h2><button class="ghost sm" onclick="go('tasks')">View All</button></div>${tl||`<p class="empty">No tasks for today. Add one in Study Plan.</p>`}</div>
+ <div class="card"><h2>Quick Actions</h2><div class="qa"><button class="a1" onclick="go('timer')">▶ Start Study Timer</button><button class="a2" onclick="go('settings')">◎ Set Daily Goal</button><button class="a3" onclick="go('syllabus')">▤ View Syllabus</button><button class="a4" onclick="go('tracker')">＋ Add Task</button><button onclick="go('tests')">Mock Test</button><button onclick="go('errors')">Log Mistake</button></div></div></div>
+ <h3 class="sec">Insights</h3>
+ <div class="grid"><div>${goalCard()}
+ <div class="card"><h2>Subject progress</h2><div class="rings">${S.subjects.map(s=>{const x=subjectStats(s.id);return ring(x.pct,s.color,s.name.replace("General ","G. "),`${x.done}/${x.total}${x.acc!==null?" · "+x.acc+"% acc":""}`)}).join("")}</div>${st.total?"":`<p class="empty">Add topics in Syllabus to see progress.</p>`}</div>
+ <div class="card"><h2>Study time, last 7 days (min)</h2>${weekBars()}</div>
+ <div class="card"><h2>Accuracy trend</h2>${accLine()}</div></div>
+ <div>${pendCard()}
+ <div class="card"><h2>Study recommendation</h2>${rec?`<b>${esc(rec.title)}</b><p class="why">${esc(rec.why)}</p><button class="sm" style="margin-top:8px" onclick="addRec()">Add to today's plan</button>`:`<p class="empty">Add syllabus topics and I'll suggest what to study next.</p>`}<h2 style="margin-top:14px">Your next steps</h2>${steps().map((x,k)=>`<div class="row"><span class="tag">${k+1}</span><div class="g">${esc(x)}</div></div>`).join("")||`<p class="empty">You're caught up.</p>`}</div>
+ <div class="card"><h2>Next revisions</h2>${nextRev()}<button class="ghost sm" onclick="go('revision')">Open Revision</button></div>
+ ${weakCard()}${remCard()}${calCard()}</div></div>`;
+}
+function renderTimer(){return timerCard()+`<p class="empty">Time is saved only when you press Finish. Timer completion never marks a chapter as completed.</p>`}
+let taskTab="today",repTab="weekly";
+function renderTasks(){
+ const td=today(),act=x=>x.status==="pending"||x.status==="partial";
+ const L={today:S.tasks.filter(x=>x.date===td&&act(x)),overdue:overdue(),upcoming:S.tasks.filter(x=>x.date>td&&act(x)).sort((a,b)=>a.date<b.date?-1:1)};
+ const names={today:"Today",overdue:"Overdue",upcoming:"Upcoming"};
+ const rows=L[taskTab].map(x=>`<div class="row"><div class="g"><div>${esc(x.title)}</div><small>${x.date} · ${esc(subj(x.subj).name)} · <span class="p-${x.prio}">${prLabel(x.prio)}</span> · ${dur(x.plan)}${+x.actual?" · "+x.actual+"m done":""}</small><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"><button class="sm" onclick="toggleTask('${x.id}')">Complete</button><button class="ghost sm" onclick="editTask('${x.id}')">Edit</button><button class="ghost sm" onclick="rescheduleTask('${x.id}')">Move</button><button class="ghost sm" onclick="skipTask('${x.id}')">Skip</button><button class="ghost sm" aria-label="Delete" onclick="delTask('${x.id}')">✕</button></div></div></div>`).join("");
+ let sug="";if(L.overdue.length){const r=rebalance(false);sug=`<div class="card"><h2>Suggested catch-up plan</h2><p class="why">${r.moves.length} of ${L.overdue.length} overdue task(s) fit into the next days while keeping each day under 80% of its target. High priority goes first.${r.left?" "+r.left+" will stay overdue until you free up time.":""}</p>${r.moves.slice(0,5).map(m=>`<div class="row"><div class="g">${esc(m.t.title)}<small>→ ${m.d}</small></div></div>`).join("")}${r.moves.length?`<button class="sm" style="margin-top:8px" onclick="applyRebalance()">Apply plan</button>`:""}</div>`}
+ const cs=Object.entries(S.chStatus||{}).filter(([k,v])=>v==="Revision Pending"||v==="Practice Pending"||v==="In Progress").map(([k,v])=>`<div class="row"><div class="g">${esc(k.split("|")[1]||k)}<small>${esc(subj(k.split("|")[0]).name)}</small></div><span class="tag">${v}</span></div>`).join("");
+ return `<div class="tabs">${Object.keys(names).map(k=>`<button class="${k===taskTab?"on":""}" onclick="taskTab='${k}';render()">${names[k]} (${L[k].length})</button>`).join("")}</div>
+ <div class="card">${rows||`<p class="empty">Nothing here.</p>`}<button class="sm" onclick="go('tracker')">＋ Add task</button></div>${sug}
+ <div class="card"><h2>Also pending</h2><p style="color:var(--mu);margin-bottom:6px">${stats().due.length} revision(s) due</p>${cs||`<p class="empty">No chapters marked In Progress, Revision Pending or Practice Pending.</p>`}</div>`;
+}
+function editTask(id){const t=S.tasks.find(x=>x.id===id),n=prompt("Task title:",t.title);if(n===null)return;const m=prompt("Planned minutes:",t.plan);if(m===null)return;const p=prompt("Priority (high / med / low):",t.prio);if(p===null)return;
+ if(!n.trim()||!(+m>0)||!["high","med","low"].includes(p.trim())){toast("Not saved: check title, minutes and priority.");return}
+ t.title=n.trim();t.plan=Math.round(+m);t.prio=p.trim();save();render()}
+function rescheduleTask(id){const t=S.tasks.find(x=>x.id===id),v=prompt("Move to date (YYYY-MM-DD):",addDays(today(),1));if(v===null)return;
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(v)||isNaN(new Date(v+"T12:00:00"))){toast("Use the format YYYY-MM-DD.");return}t.date=v;save();render();toast("Moved to "+v)}
+function rebalance(apply){
+ const o={high:0,med:1,low:2},od=overdue().sort((a,b)=>(o[a.prio]-o[b.prio])||(a.date<b.date?-1:1)),moves=[],load={};
+ S.tasks.filter(x=>x.date>today()&&(x.status==="pending"||x.status==="partial")).forEach(x=>load[x.date]=(load[x.date]||0)+x.plan);
+ od.forEach(t=>{for(let i=1;i<=14;i++){const d=addDays(today(),i);if((load[d]||0)+t.plan<=targetFor(d)*60*0.8){load[d]=(load[d]||0)+t.plan;moves.push({t,d});return}}});
+ return{moves,left:od.length-moves.length}}
+function applyRebalance(){const r=rebalance();if(!confirm("Move "+r.moves.length+" task(s) to the suggested dates?"))return;r.moves.forEach(m=>m.t.date=m.d);save();render();toast("Plan applied")}
+function suggest(){
+ const out=[],td=today(),from=addDays(td,-6),ses=S.sessions||[],byCh={};
+ ses.forEach(x=>{if(!x.chapter)return;const k=x.subj+"|"+x.chapter,c=byCh[k]=byCh[k]||{learn:0,prac:0,subj:x.subj,ch:x.chapter};if(x.cat==="Practice Questions"||x.cat==="Mock Tests")c.prac+=x.mins;else c.learn+=x.mins});
+ Object.values(byCh).filter(c=>c.learn>=60&&c.prac===0).slice(0,2).forEach(c=>out.push({f:`You logged ${hm(c.learn)} on ${c.ch} (${subj(c.subj).name}) but no practice session.`,t:`Schedule a practice session for ${c.ch}.`}));
+ const wk=ses.filter(x=>x.date>=from),lec=wk.filter(x=>x.cat==="Lecture Watching").reduce((a,x)=>a+x.mins,0),pr=wk.filter(x=>x.cat==="Practice Questions").reduce((a,x)=>a+x.mins,0);
+ if(lec>=120&&lec>pr*2)out.push({f:`Last 7 days: ${hm(lec)} of lectures vs ${hm(pr)} of practice.`,t:"Shift some lecture time to solving questions."});
+ const tg=S.settings.subjTargets||{};
+ S.subjects.filter(x=>+tg[x.id]>0).forEach(x=>{let m=0;for(let i=0;i<7;i++)m+=perSubj(addDays(td,-i))[x.id]||0;const avg=m/7;if(m>0&&avg<tg[x.id]*30)out.push({f:`${x.name} averaged ${hm(avg)}/day against a ${tg[x.id]}h target.`,t:"Protect time for it, or lower the target to something you can keep."})});
+ const od=overdue().length;if(od>=3)out.push({f:`${od} tasks are overdue.`,t:"Use the catch-up plan in Tasks to spread them over the coming days."});
+ let tot=0,tt=0;for(let i=0;i<7;i++){const d=addDays(td,-i);tot+=minsOn(d);tt+=targetFor(d)*60}
+ if(tot>0&&tot<tt*0.6)out.push({f:`Your 7-day total is ${hm(tot)} against a planned ${hm(tt)}.`,t:"Try a target close to what you actually study, then raise it gradually."});
+ const er={};S.errors.filter(e=>!e.resolved).forEach(e=>{if(e.topic)er[e.topic]=(er[e.topic]||0)+1});
+ Object.entries(er).filter(([k,v])=>v>=3).slice(0,2).forEach(([k,v])=>out.push({f:`${v} unresolved mistakes in ${k}.`,t:"Review the rule and reattempt these questions."}));
+ return out}
+function renderReports(){
+ const n=repTab==="weekly"?7:30,days=[...Array(n)].map((_,i)=>addDays(today(),i-n+1)),per=days.map(perSubj),tot=per.map(p=>Object.values(p).reduce((a,b)=>a+b,0)),max=Math.max(60,...tot),W=n===7?36:8,G=n===7?8:3;
+ let rects="",lab="";
+ days.forEach((d,i)=>{let y=100;S.subjects.forEach(sb=>{const m=per[i][sb.id]||0;if(!m)return;const h=m/max*90;y-=h;rects+=`<rect x="${i*(W+G)}" y="${y}" width="${W}" height="${h}" rx="2" fill="${sb.color}"/>`});
+  if(n===7||i%5===0)lab+=`<text x="${i*(W+G)+W/2}" y="114" text-anchor="middle" font-size="9" fill="#9aa8d8">${n===7?new Date(d+"T12:00:00").toLocaleDateString(undefined,{weekday:"short"}):d.slice(8)}</text>`});
+ const chart=tot.some(x=>x)?`<svg viewBox="0 0 ${n*(W+G)} 120" width="100%" role="img" aria-label="Study time by subject">${rects}${lab}</svg><div style="display:flex;flex-wrap:wrap;gap:10px;font-size:12px;margin-top:6px">${S.subjects.map(sb=>`<span><span style="color:${sb.color}">●</span> ${esc(sb.name)}</span>`).join("")}</div>`:`<p class="empty">No study time recorded in this period yet.</p>`;
+ const sub={};per.forEach(p=>Object.entries(p).forEach(([k,v])=>sub[k]=(sub[k]||0)+v));const all=Object.values(sub).reduce((a,b)=>a+b,0);
+ const dist=Object.entries(sub).filter(([k,v])=>v>0).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<div style="margin-bottom:8px"><div style="display:flex;justify-content:space-between"><span style="color:${subj(k).color}">${esc(subj(k).name)}</span><span>${hm(v)} · ${Math.round(v/all*100)}%</span></div><div class="bar"><i style="width:${v/all*100}%;background:${subj(k).color}"></i></div></div>`).join("");
+ const inR=S.tasks.filter(x=>x.date>=days[0]&&x.date<=today()),pl=inR.reduce((a,x)=>a+x.plan,0),ac=inR.reduce((a,x)=>a+(+x.actual||0),0);
+ const hit=days.filter((d,i)=>tot[i]>0&&tot[i]>=targetFor(d)*60).length,studied=tot.filter(x=>x>0).length;
+ const sg=suggest();
+ return `<div class="tabs"><button class="${repTab==="weekly"?"on":""}" onclick="repTab='weekly';render()">Weekly</button><button class="${repTab==="monthly"?"on":""}" onclick="repTab='monthly';render()">Monthly</button></div>
+ <div class="card"><h2>Study time overview (min)</h2>${chart}</div>
+ <div class="card"><h2>Subject-wise time</h2>${dist||`<p class="empty">Nothing recorded yet.</p>`}</div>
+ <div class="card"><h2>Consistency</h2><p>Studied on ${studied} of ${n} days · met the daily goal on ${hit} day(s).</p><p style="color:var(--mu)">Planned ${hm(pl)} vs actual ${hm(ac)} (tasks only).</p><p style="color:var(--mu)">Pending: ${overdue().length} overdue · ${S.tasks.filter(x=>x.date===today()&&(x.status==="pending"||x.status==="partial")).length} today.</p></div>
+ <div class="card"><h2>Accuracy trend</h2>${accLine()}</div>
+ <div class="card"><h2>Smart suggestions</h2>${sg.map(x=>`<div class="row"><div class="g"><small>Observed</small>${esc(x.f)}<div class="why">Suggestion: ${esc(x.t)}</div></div></div>`).join("")||`<p class="empty">Not enough recorded data yet. Log timer sessions, tasks and tests to get suggestions based on your own records.</p>`}</div>`;
+}
+function showRem(){const r=remList();$("#modal").innerHTML=`<div class="card" style="max-width:380px;margin:auto"><h2>Reminders</h2>${r.map(x=>`<div class="row"><div class="g">${esc(x)}</div></div>`).join("")||`<p class="empty">All clear for now.</p>`}<button class="w" style="margin-top:10px;width:100%" onclick="closeModal()">Close</button></div>`;$("#modal").style.display="flex"}
 function renderTracker(){
   const f=filterDate,list=S.tasks.filter(x=>x.date===f);
   const planned=list.reduce((a,x)=>a+(+x.plan||0),0),act=list.reduce((a,x)=>a+(+x.actual||0),0);
-  return `${timerCard()}${pendCard()}<div class="card"><h2>Add task</h2><form class="form" onsubmit="addTask(event)">
+  return `${pendCard()}<div class="card"><h2>Add task</h2><form class="form" onsubmit="addTask(event)">
   <input class="w" name="title" placeholder="e.g. Percentage – Lecture 12" required maxlength="120">
   <select name="subj" aria-label="Subject">${subjOpts()}</select><input name="plan" type="number" min="5" max="480" value="60" aria-label="Planned minutes">
   <select name="prio" aria-label="Priority"><option value="high">High</option><option value="med" selected>Medium</option><option value="low">Low</option></select>
@@ -198,8 +282,10 @@ function renderSyllabus(){
   return `<div class="card"><h2>Bulk add topics</h2><p style="color:var(--mu);font-size:13px;margin-bottom:8px">One topic per line: <code>Chapter | Topic</code></p>
   <form onsubmit="bulkAdd(event)" class="form"><select name="subj" class="w" aria-label="Subject">${subjOpts()}</select>
   <textarea class="w" name="lines" rows="5" placeholder="Percentage | Basics&#10;Percentage | Successive change&#10;Profit & Loss | Discount"></textarea><button class="w">Add topics</button></form></div>
-  ${S.subjects.map(s=>{const tp=S.topics.filter(x=>x.subj===s.id);if(!tp.length)return"";
-  return `<div class="card"><h2 style="color:${s.color}">${esc(s.name)}</h2>${tp.map(x=>`<div class="row ${x.status==="done"?"done":""}"><button class="chk" aria-label="Toggle topic done" onclick="toggleTopic('${x.id}')"></button><div class="g"><div class="t">${esc(x.title)}</div><small>${esc(x.chapter)}${x.doneOn?" · done "+x.doneOn:""}</small></div><button class="ghost sm" aria-label="Delete topic" onclick="delTopic('${x.id}')">✕</button></div>`).join("")}</div>`}).join("")}`;
+  ${S.subjects.map(sb=>{const tp=S.topics.filter(x=>x.subj===sb.id);if(!tp.length)return"";
+  return `<div class="card"><h2 style="color:${sb.color}">${esc(sb.name)}</h2>${chaptersOf(sb.id).map(ch=>{const ts=tp.filter(x=>x.chapter===ch),dn=ts.filter(x=>x.status==="done").length,key=sb.id+"|"+ch,st=(S.chStatus||{})[key]||"Not Started",mn=chapterMins(sb.id,ch);
+  return `<div style="border-top:1px solid var(--line);padding-top:8px;margin-top:8px"><div class="row" style="border:0;padding:0"><div class="g"><b>${esc(ch)}</b><small>${dn}/${ts.length} topics · ${mn?Math.floor(mn/60)+"h "+Math.round(mn%60)+"m studied":"no time logged"}</small></div><select style="width:150px" aria-label="Chapter status" data-k="${esc(key)}" onchange="setChStatus(this.dataset.k,this.value)">${CHST.map(o=>`<option ${o===st?"selected":""}>${o}</option>`).join("")}</select></div>
+  ${ts.map(x=>`<div class="row ${x.status==="done"?"done":""}"><button class="chk" aria-label="Toggle topic done" onclick="toggleTopic('${x.id}')"></button><div class="g"><div class="t">${esc(x.title)}</div>${x.doneOn?`<small>done ${x.doneOn}</small>`:""}</div><button class="ghost sm" aria-label="Delete topic" onclick="delTopic('${x.id}')">✕</button></div>`).join("")}</div>`}).join("")}</div>`}).join("")}`;
 }
 function renderRevision(){
   const st=stats(),row=(x,late)=>`<div class="row"><div class="g"><div>${esc(x.tp.title)}</div><small>${esc(subj(x.tp.subj).name)} · due ${x.r.due}</small></div>${late?`<button class="sm" onclick="revise('${x.tp.id}',${x.i},true)">Recalled</button><button class="ghost sm" onclick="revise('${x.tp.id}',${x.i},false)">Forgot</button>`:""}</div>`;
@@ -221,6 +307,13 @@ function renderSettings(){
   <label class="w">Revision intervals (days, comma separated)<input name="intervals" value="${s.intervals.join(",")}"></label>
   <label>Marks per correct<input name="mc" type="number" step="0.25" value="${s.markCorrect}"></label><label>Penalty per wrong<input name="mw" type="number" step="0.25" value="${s.markWrong}"></label>
   <button class="w">Save settings</button></form></div>
+  <div class="card"><h2>Subject targets, goals &amp; session types</h2><form class="form" onsubmit="saveTargets(event)">
+  ${S.subjects.map(x=>`<label>${esc(x.name)} (h/day)<input name="st_${x.id}" type="number" min="0" max="16" step="0.25" value="${(s.subjTargets||{})[x.id]??""}"></label>`).join("")}
+  <p class="w empty">${allocText()}</p>
+  <label>Weekly goal (hours)<input name="weeklyHours" type="number" min="0" max="112" step="0.5" value="${s.weeklyHours??""}" placeholder="auto"></label>
+  <label>Monthly goal (hours)<input name="monthlyHours" type="number" min="0" max="480" step="1" value="${s.monthlyHours??""}" placeholder="auto"></label>
+  <label class="w">Session types (comma separated)<input name="cats" value="${esc(SCATS().join(", "))}"></label>
+  <button class="w">Save targets</button></form></div>
   <div class="card"><h2>Daily study hours &amp; reminders</h2><form class="form" onsubmit="savePlan(event)">
   ${["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].map((n,i)=>{const k=(i+1)%7;const v=(s.dayTargets||{})[k];return `<label>${n} (hours)<input name="dt${k}" type="number" min="0" max="16" step="0.5" value="${v!==undefined?v:s.targetHours}"></label>`}).join("")}
   <label class="w"><input type="checkbox" name="remOn" style="width:auto;min-height:0" ${s.remOn?"checked":""}> Daily reminder</label>
@@ -238,10 +331,10 @@ function renderSettings(){
   <input id="imp" type="file" accept="application/json" hidden onchange="importData(this.files[0])"></div>`;
 }
 function render(){
-  const f={home:renderHome,tracker:renderTracker,syllabus:renderSyllabus,revision:renderRevision,tests:renderTests,errors:renderErrors,settings:renderSettings,search:renderSearch,more:renderMore}[view];
+  const f={home:renderHome,timer:renderTimer,tasks:renderTasks,reports:renderReports,tracker:renderTracker,syllabus:renderSyllabus,revision:renderRevision,tests:renderTests,errors:renderErrors,settings:renderSettings,search:renderSearch,more:renderMore}[view];
   $("#app").innerHTML=f();
   $("#nav").innerHTML=BRAND+Object.entries(VIEWS).map(([k,v])=>`<button class="${k===view?"on":""} ${v[2]?"sec":""}" onclick="go('${k}')"><b>${v[1]}</b>${v[0]}</button>`).join("")+`<button class="more ${SEC.includes(view)?"on":""}" onclick="go('more')"><b>⋯</b>More</button>`+GOAL;
-  $("#sub").textContent=new Date().toLocaleDateString(undefined,{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+  $("#sub").textContent="Plan · Study · Track · Success";$("#bc").textContent=remList().length||"";
 }
 function go(v){view=v;searchQ="";$("#q").value="";render();scrollTo(0,0)}
 
@@ -250,16 +343,53 @@ function steps(){const st=stats(),r=recommend(),l=[];
  const last=S.tests.map(x=>x.date).sort().pop();if(!last||last<addDays(st.t,-7))l.push("Attempt a mock test");
  const o=S.errors.filter(e=>!e.resolved).length;if(o)l.push("Review "+o+" open mistake(s)");return l}
 function addRec(){const r=recommend();if(!r)return;S.tasks.push({id:uid(),date:today(),subj:r.subj,title:r.title,plan:60,actual:0,status:"pending",prio:"high"});save();render();toast("Added to today's plan")}
+let tmSubj="";
+const SCATS=()=>S.settings.cats||["Concept Learning","Lecture Watching","Practice Questions","Revision","Mock Tests"];
+const CHST=["Not Started","In Progress","Completed","Revision Pending","Practice Pending"];
+const tmEl=t=>t.accMs+(t.paused?0:Date.now()-t.startedAt);
+const chaptersOf=id=>[...new Set(S.topics.filter(x=>x.subj===id).map(x=>x.chapter))];
+const chapterMins=(id,ch)=>(S.sessions||[]).filter(x=>x.subj===id&&x.chapter===ch).reduce((a,x)=>a+x.mins,0);
+function perSubj(d){const p={};S.tasks.filter(x=>x.date===d).forEach(x=>p[x.subj]=(p[x.subj]||0)+(+x.actual||0));(S.sessions||[]).filter(x=>x.date===d&&!x.linked).forEach(x=>p[x.subj]=(p[x.subj]||0)+x.mins);return p}
 function timerCard(){
- const t=S.timer,td=today(),per={};
- S.tasks.filter(x=>x.date===td).forEach(x=>per[x.subj]=(per[x.subj]||0)+(+x.actual||0));
- const ss=(S.sessions||[]).filter(x=>x.date===td);ss.forEach(x=>per[x.subj]=(per[x.subj]||0)+x.mins);
- const tasks=S.tasks.filter(x=>x.date===td&&x.status!=="done"&&x.status!=="skipped");
- const lt=t&&t.task?S.tasks.find(x=>x.id===t.task):null;
- const body=t?`<p><b style="color:${subj(t.subj).color}">${esc(subj(t.subj).name)}</b>${lt?" · "+esc(lt.title):""}</p><div id="tm" style="font-size:34px;font-weight:600;margin:6px 0">${fmt(Date.now()-t.start)}</div><div class="form"><button onclick="stopTimer()">Stop and save</button><button class="ghost" onclick="discardTimer()">Discard</button></div>`
- :`<form class="form" onsubmit="startTimer(event)"><select name="subj" aria-label="Subject">${subjOpts()}</select><select name="task" aria-label="Task"><option value="">Free study (no task)</option>${tasks.map(x=>`<option value="${x.id}">${esc(x.title)}</option>`).join("")}</select><button class="w">Start timer</button></form>`;
+ const t=S.timer,td=today(),per=perSubj(td);
+ const ss=(S.sessions||[]).filter(x=>x.date===td);
+ let body;
+ if(t){
+  const el=tmEl(t),rem=t.target*60000-el;
+  body=`<p><b style="color:${subj(t.subj).color}">${esc(subj(t.subj).name)}</b>${t.chapter?" → "+esc(t.chapter):""} · ${esc(t.cat)}${t.paused?" · <span class='p-med'>paused</span>":""}</p>
+  <div style="position:relative;width:220px;height:220px;margin:8px auto"><svg viewBox="0 0 200 200" width="220" height="220"><circle cx="100" cy="100" r="90" fill="none" stroke="#0d1442" stroke-width="12"/><circle id="tr" cx="100" cy="100" r="90" fill="none" stroke="${rem<0?"#f87171":"#34d399"}" stroke-width="12" stroke-linecap="round" stroke-dasharray="${565.5*Math.max(0,Math.min(1,rem/(t.target*60000)))} 565.5" transform="rotate(-90 100 100)"/></svg><div id="tm" style="position:absolute;inset:0;display:grid;place-items:center;font-size:32px;font-weight:600">${rem<0?"+":""}${fmt(Math.abs(rem))}</div></div>
+  <small id="te" style="color:var(--mu)">${rem<0?"Overtime":"Remaining"} · studied ${fmt(el)} of ${t.target} min</small>
+  <div class="bar"><i id="tb" style="width:${Math.min(100,el/(t.target*600))}%"></i></div>
+  <div class="form" style="margin-top:10px"><button onclick="${t.paused?"resumeTimer()":"pauseTimer()"}">${t.paused?"Resume":"Pause"}</button><button onclick="finishTimer()">Finish session</button><button class="ghost w" onclick="cancelTimer()">Cancel (don't save)</button></div>`;
+ }else{
+  if(!S.subjects.some(x=>x.id===tmSubj))tmSubj=S.subjects[0]?S.subjects[0].id:"";
+  const tasks=S.tasks.filter(x=>x.date===td&&x.status!=="done"&&x.status!=="skipped");
+  body=`<form class="form" onsubmit="startTimer(event)">
+  <select name="subj" aria-label="Subject" onchange="tmSubj=this.value;render()">${subjOpts(tmSubj)}</select>
+  <select name="chapter" aria-label="Chapter"><option value="">Select chapter</option>${chaptersOf(tmSubj).map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join("")}</select>
+  <input class="w" name="newch" placeholder="…or type a chapter name" maxlength="60">
+  <select name="cat" aria-label="Session type">${SCATS().map(c=>`<option>${esc(c)}</option>`).join("")}</select>
+  <input name="target" type="number" min="1" max="720" value="60" aria-label="Target minutes" title="Target minutes">
+  <select class="w" name="task" aria-label="Link to task"><option value="">Not linked to a task</option>${tasks.map(x=>`<option value="${x.id}">${esc(x.title)}</option>`).join("")}</select>
+  <button class="w">Start study</button></form><small style="color:var(--mu)">Target is in minutes (3 hours = 180).</small>`;
+ }
  const sum=Object.entries(per).filter(([k,v])=>v>0).map(([k,v])=>esc(subj(k).name)+" "+Math.floor(v/60)+"h "+Math.round(v%60)+"m").join(" · ");
- return `<div class="card"><h2>Study timer</h2>${body}${sum?`<p style="margin-top:10px;color:var(--mu);font-size:13px">Today: ${sum}</p>`:""}${ss.map(x=>`<div class="row"><div class="g">${esc(subj(x.subj).name)}<small>${x.mins} min (timer)</small></div><button class="ghost sm" aria-label="Delete session" onclick="delSession('${x.id}')">✕</button></div>`).join("")}</div>`;
+ return `<div class="card"><h2>Chapter-wise Timer</h2>${body}${sum?`<p style="margin-top:10px;color:var(--mu);font-size:13px">Today: ${sum}</p>`:""}${ss.map(x=>`<div class="row"><div class="g">${esc(subj(x.subj).name)}${x.chapter?" → "+esc(x.chapter):""}<small>${x.mins} min · ${esc(x.cat||"")}</small></div><button class="ghost sm" aria-label="Delete session" onclick="delSession('${x.id}')">✕</button></div>`).join("")}</div>`;
+}
+function allocText(){const a=Object.values(S.settings.subjTargets||{}).reduce((x,y)=>x+(+y||0),0),t=targetFor(today());
+ return `Allocated ${+a.toFixed(2)}h of today's ${t}h target`+(Math.abs(a-t)<.01?" — matches.":a<t?` — ${+(t-a).toFixed(2)}h unallocated.`:` — ${+(a-t).toFixed(2)}h over target.`)}
+function planCard(){
+ const tg=S.settings.subjTargets||{},rows=S.subjects.filter(x=>+tg[x.id]>0);
+ if(!rows.length)return `<div class="card"><h2>Subject-wise plan</h2><p class="empty">Set a daily target for each subject in Settings.</p><button class="ghost sm" onclick="go('settings')">Set targets</button></div>`;
+ const m=perSubj(today());
+ return `<div class="card"><h2>Subject-wise plan</h2><p class="empty" style="padding:0 0 8px">${allocText()}</p>${rows.map(x=>{const done=m[x.id]||0,pc=Math.min(100,Math.round(done/(tg[x.id]*60)*100));return `<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;gap:8px"><span style="color:${x.color}">${esc(x.name)} · ${tg[x.id]}h/day</span><span>${Math.floor(done/60)}h ${Math.round(done%60)}m · ${pc}%</span></div><div class="bar"><i style="width:${pc}%;background:${x.color}"></i></div></div>`}).join("")}</div>`;
+}
+function goalCard(){
+ const t=new Date(today()+"T12:00:00"),ws=addDays(today(),-((t.getDay()+6)%7)),we=addDays(ws,6),ms=today().slice(0,8)+"01",me=today().slice(0,8)+String(new Date(t.getFullYear(),t.getMonth()+1,0).getDate()).padStart(2,"0");
+ const sum=(a,b)=>{let m=0,g=0;for(let d=a;d<=b;d=addDays(d,1)){m+=minsOn(d);g+=targetFor(d)*60}return[m,g]};
+ const [wm,w0]=sum(ws,we),[mm,m0]=sum(ms,me),wg=S.settings.weeklyHours?S.settings.weeklyHours*60:w0,mg=S.settings.monthlyHours?S.settings.monthlyHours*60:m0;
+ const row=(n,m,g)=>{const pc=g?Math.min(100,Math.round(m/g*100)):0;return `<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between"><span>${n}</span><span>${+(m/60).toFixed(1)} / ${+(g/60).toFixed(1)} h · ${pc}%</span></div><div class="bar"><i style="width:${pc}%"></i></div><small style="color:var(--mu)">${+(Math.max(0,g-m)/60).toFixed(1)} h remaining</small></div>`};
+ return `<div class="card"><h2>Weekly &amp; monthly goals</h2>${row("This week",wm,wg)}${row("This month",mm,mg)}</div>`;
 }
 function pendCard(){
  const on=S.settings.showPending!==false,l=overdue();
@@ -268,17 +398,34 @@ function pendCard(){
 }
 function togglePend(v){S.settings.showPending=v;save();render()}
 function moveToday(id){S.tasks.find(x=>x.id===id).date=today();save();render();toast("Moved to today")}
-function startTimer(e){const d=fd(e);S.timer={subj:d.subj,task:d.task||"",start:Date.now()};save();render()}
-function discardTimer(){if(!confirm("Discard this timer without saving?"))return;S.timer=null;save();render()}
-function stopTimer(){
- const t=S.timer,el=Math.max(1,Math.round((Date.now()-t.start)/60000));
- const v=prompt("Minutes to save (edit if needed):",el);if(v===null)return;
- const m=Math.round(+v);if(!(m>0)){toast("Enter minutes above 0, or use Discard.");return}
- const task=t.task?S.tasks.find(x=>x.id===t.task):null;
- if(task){task.actual=(+task.actual||0)+m;if(task.status==="pending"||task.status==="partial")task.status=task.actual>=task.plan?"done":"partial"}
- else S.sessions.push({id:uid(),date:iso(t.start),subj:t.subj,mins:m});
- S.timer=null;save();render();toast(m+" min saved")}
-function delSession(id){S.sessions=S.sessions.filter(x=>x.id!==id);save();render()}
+function startTimer(e){const d=fd(e);if(S.timer)return;const tg=Math.round(+d.target);if(!(tg>0)){toast("Enter a target above 0 minutes.");return}
+ S.timer={id:uid(),subj:d.subj,chapter:(d.newch||d.chapter||"").trim(),cat:d.cat,task:d.task||"",target:tg,startedAt:Date.now(),accMs:0,paused:false,flag:0,day:today()};save();render();toast("Study session started")}
+function pauseTimer(){const t=S.timer;if(!t||t.paused)return;t.accMs+=Date.now()-t.startedAt;t.paused=true;save();render()}
+function resumeTimer(){const t=S.timer;if(!t||!t.paused)return;t.startedAt=Date.now();t.paused=false;save();render()}
+function cancelTimer(){if(!confirm("Cancel this session? Nothing will be saved."))return;S.timer=null;closeModal();save();render()}
+function finishTimer(){
+ const t=S.timer;if(!t)return false;const el=Math.max(1,Math.round(tmEl(t)/60000));
+ const v=prompt("Minutes to save (edit if needed):",el);if(v===null)return false;
+ const m=Math.round(+v);if(!(m>0)){toast("Enter minutes above 0, or use Cancel.");return false}
+ if(!S.sessions.some(x=>x.id===t.id)){const task=t.task?S.tasks.find(x=>x.id===t.task):null;
+  S.sessions.push({id:t.id,date:t.day||today(),subj:t.subj,chapter:t.chapter,cat:t.cat,mins:m,target:t.target,task:task?task.id:"",linked:!!task});
+  if(task){task.actual=(+task.actual||0)+m;if(task.status==="pending"||task.status==="partial")task.status=task.actual>=task.plan?"done":"partial"}}
+ S.timer=null;closeModal();save();render();toast(m+" min saved. Chapter status is unchanged.");return true}
+function delSession(id){const x=S.sessions.find(y=>y.id===id);if(!x)return;if(x.linked){const t=S.tasks.find(y=>y.id===x.task);if(t)t.actual=Math.max(0,(+t.actual||0)-x.mins)}S.sessions=S.sessions.filter(y=>y.id!==id);save();render()}
+function closeModal(){$("#modal").style.display="none";$("#modal").innerHTML=""}
+function ping(msg){toast(msg);if("Notification" in window&&Notification.permission==="granted"){try{new Notification("SSC CGL Planner",{body:msg})}catch(e){}}}
+function showExpiry(){const t=S.timer;$("#modal").innerHTML=`<div class="card" style="max-width:380px;margin:auto"><h2>Target time reached</h2><p style="margin-bottom:10px">${esc(subj(t.subj).name)}${t.chapter?" → "+esc(t.chapter):""}: ${t.target} min done. Your chapter is not marked completed. What next?</p><div class="form"><button onclick="extendTimer()">Continue (+15 min)</button><button onclick="finishTimer()">Finish</button><button class="ghost w" onclick="rescheduleRest()">Finish and schedule remaining work</button></div></div>`;$("#modal").style.display="flex"}
+function extendTimer(){const t=S.timer;if(!t)return;t.target+=15;t.flag=1;save();closeModal();render()}
+function rescheduleRest(){const t=S.timer;if(!t)return;const v=prompt("Minutes of remaining work to schedule for tomorrow:",30);if(v===null)return;const n=Math.round(+v);if(!(n>0)){toast("Enter minutes above 0.");return}
+ const copy={subj:t.subj,chapter:t.chapter,cat:t.cat};
+ if(finishTimer()){S.tasks.push({id:uid(),date:addDays(today(),1),subj:copy.subj,title:(copy.chapter||"Study")+" – remaining ("+copy.cat+")",plan:n,actual:0,status:"pending",prio:"med"});save();render();toast("Scheduled for tomorrow")}}
+function checkTimer(){const t=S.timer;if(!t||t.paused)return;const rem=t.target*60000-tmEl(t);
+ if(t.target>15&&rem<=600000&&rem>0&&!t.flag){t.flag=1;save();ping("10 minutes left in this session")}
+ if(rem<=0&&t.flag<2){t.flag=2;save();ping("Study target reached: "+subj(t.subj).name+(t.chapter?" → "+t.chapter:""));showExpiry()}}
+function setChStatus(k,v){S.chStatus=S.chStatus||{};S.chStatus[k]=v;save();toast("Chapter status saved")}
+function saveTargets(e){const d=fd(e),st={};S.subjects.forEach(x=>{const v=d["st_"+x.id];if(v!==""&&+v>0)st[x.id]=Math.min(16,+v)});
+ const cats=(d.cats||"").split(",").map(x=>x.trim()).filter(Boolean);
+ Object.assign(S.settings,{subjTargets:st,weeklyHours:d.weeklyHours!==""?+d.weeklyHours:null,monthlyHours:d.monthlyHours!==""?+d.monthlyHours:null,cats:cats.length?cats:SCATS()});save();render();toast(allocText())}
 function savePlan(e){const d=fd(e),dt={};for(let k=0;k<7;k++){const v=d["dt"+k];dt[k]=v===""?S.settings.targetHours:Math.min(16,Math.max(0,+v))}
  Object.assign(S.settings,{dayTargets:dt,remOn:!!d.remOn,remTime:d.remTime||"18:00",remRev:!!d.remRev,remPend:!!d.remPend,remTest:!!d.remTest});save();render();toast("Saved")}
 function checkRem(){const c=S.settings;if(!c.remOn)return;const n=new Date(),hm=String(n.getHours()).padStart(2,"0")+":"+String(n.getMinutes()).padStart(2,"0");
@@ -324,7 +471,7 @@ function renderSearch(){
  +sec("Mistakes",S.errors.filter(x=>h(x.q)||h(x.topic)||h(x.why)||h(x.right)),x=>`<div class="row"><div class="g">${esc(x.q)}<small>${esc(x.topic)} · ${esc(x.cat)}</small></div></div>`)
  ||`<p class="empty">No matches for "${esc(searchQ)}".</p>`;
 }
-function renderMore(){return `<div class="card"><h2>More</h2>${["tests","errors","settings"].map(k=>`<div class="row"><button class="ghost g" style="text-align:left" onclick="go('${k}')">${VIEWS[k][1]} ${VIEWS[k][0]}</button></div>`).join("")}</div>`}
+function renderMore(){return `<div class="card"><h2>More</h2>${Object.keys(VIEWS).filter(k=>VIEWS[k][2]).map(k=>`<div class="row"><button class="ghost g" style="text-align:left" onclick="go('${k}')">${VIEWS[k][1]} ${VIEWS[k][0]}</button></div>`).join("")}</div>`}
 function renderErrors(){
  const q=errQ.toLowerCase(),cnt={};S.errors.filter(e=>!e.resolved).forEach(e=>cnt[e.topic]=(cnt[e.topic]||0)+1);
  const list=S.errors.filter(e=>(!errCat||e.cat===errCat)&&(!errOpen||!e.resolved)&&(!q||JSON.stringify(e).toLowerCase().includes(q))).sort((a,b)=>a.date<b.date?1:-1);
@@ -367,7 +514,8 @@ function delSubject(id){if(S.topics.some(x=>x.subj===id)&&!confirm("This subject
 function exportData(){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(S,null,2)],{type:"application/json"}));a.download="ssc-planner-backup-"+today()+".json";a.click();toast("Backup downloaded")}
 function importData(f){if(!f)return;const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(!Array.isArray(d.subjects)||!Array.isArray(d.topics)||!Array.isArray(d.tasks)||!Array.isArray(d.tests)||!d.settings)throw 0;
   if(!confirm("Replace all current data with this backup?"))return;S=d;S.errors=S.errors||[];S.sessions=S.sessions||[];save();render();toast("Backup restored")}catch(e){toast("Invalid backup file. Nothing was changed.")}};r.readAsText(f)}
-setInterval(()=>{const e=$("#tm");if(e&&S.timer)e.textContent=fmt(Date.now()-S.timer.start);checkRem()},1000);
+setInterval(()=>{const t=S.timer;if(t){const el=tmEl(t),rem=t.target*60000-el,a=$("#tm"),b=$("#te"),c=$("#tb");
+ if(a)a.textContent=(rem<0?"+":"")+fmt(Math.abs(rem));if(b)b.textContent=(rem<0?"Overtime":"Remaining")+" · studied "+fmt(el)+" of "+t.target+" min";if(c)c.style.width=Math.min(100,el/(t.target*600))+"%";const r=$("#tr");if(r)r.setAttribute("stroke-dasharray",565.5*Math.max(0,Math.min(1,rem/(t.target*60000)))+" 565.5");checkTimer()}checkRem()},1000);
 render();
 </script>
 </body>
