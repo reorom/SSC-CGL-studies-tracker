@@ -3,232 +3,323 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a1030">
 <title>SSC CGL 2027 Planner</title>
 <style>
-:root{--bg:#0b1020;--card:#141b34;--line:#26305a;--tx:#e8ecff;--mu:#8e9acb;--ac:#5b7cff;--ok:#2fd18b;--wa:#ffb347;--er:#ff5c7a}
+:root{--bg:#0a1030;--card:#121a47;--card2:#18225a;--line:#27337a;--tx:#eaf0ff;--mu:#9aa8d8;--ac:#4f8cff;--pu:#9b6bff;--cy:#22d3ee;--gr:#34d399;--or:#fb923c;--rd:#f87171}
 *{box-sizing:border-box;margin:0}
-body{background:var(--bg);color:var(--tx);font:15px/1.45 system-ui,sans-serif;padding:0 14px 90px}
-header{padding:18px 0 8px;display:flex;justify-content:space-between;align-items:center}
-h1{font-size:20px}h2{font-size:16px;margin:16px 0 8px}
-.sub{color:var(--mu);font-size:12px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:10px}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.big{font-size:24px;font-weight:700}
-.bar{height:8px;background:var(--line);border-radius:6px;overflow:hidden;margin-top:6px}
-.bar i{display:block;height:100%;background:var(--ok)}
-.row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
-.row:last-child{border:0}.row .t{flex:1}
-.tag{font-size:11px;padding:2px 8px;border-radius:8px;background:#26305a;color:#b9c4ff}
-input,select,textarea{width:100%;background:#0e1430;border:1px solid var(--line);color:var(--tx);border-radius:10px;padding:10px;margin:4px 0;font:inherit}
-button{background:var(--ac);color:#fff;border:0;border-radius:10px;padding:10px 14px;font:inherit;font-weight:600}
-button.g{background:#26305a}button.d{background:none;color:var(--er);padding:4px 8px}
-nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:#0e1430;border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
-nav button{flex:1;background:none;color:var(--mu);border-radius:0;font-size:12px;padding:10px 2px}
-nav button.on{color:var(--ac)}
-.pg{display:none}.pg.on{display:block}
-.chk{width:22px;height:22px;border-radius:50%;border:2px solid var(--mu);flex:none;padding:0;background:none}
-.chk.on{background:var(--ok);border-color:var(--ok)}
-.timer{font-size:52px;text-align:center;font-weight:700;margin:10px 0}
-.bars{display:flex;align-items:flex-end;gap:6px;height:90px}
-.bars div{flex:1;background:var(--ac);border-radius:4px 4px 0 0;min-height:3px;position:relative}
-.bars span{position:absolute;top:-16px;font-size:10px;left:0;right:0;text-align:center;color:var(--mu)}
-.empty{color:var(--mu);text-align:center;padding:14px}
+html,body{background:var(--bg);color:var(--tx);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+body{min-height:100vh;padding-bottom:78px}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:var(--ac);color:#fff;border-radius:10px;padding:10px 14px;min-height:44px}
+button.ghost{background:transparent;border:1px solid var(--line);color:var(--tx)}
+button.sm{min-height:36px;padding:6px 10px;font-size:13px}
+input,select,textarea{background:#0d1442;border:1px solid var(--line);border-radius:10px;padding:10px;min-height:44px;width:100%}
+:focus-visible{outline:2px solid var(--cy);outline-offset:2px}
+nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:#0d1442;border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom);z-index:5}
+nav button{flex:1;background:none;border-radius:0;font-size:12px;color:var(--mu);display:flex;flex-direction:column;align-items:center;gap:2px;min-height:58px}
+nav button.on{color:var(--cy)}
+nav b{font-size:18px;font-weight:400}
+header{padding:16px 16px 4px;padding-top:calc(16px + env(safe-area-inset-top))}
+header h1{font-size:20px}header p{color:var(--mu);font-size:13px}
+main{padding:12px 16px;max-width:1100px;margin:auto}
+.grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.stats{display:grid;gap:10px;grid-template-columns:repeat(2,1fr)}
+.card{background:linear-gradient(160deg,var(--card),var(--card2));border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px}
+.card h2{font-size:16px;margin-bottom:10px}
+.stat small{color:var(--mu);display:block}.stat strong{font-size:24px}
+.bar{height:8px;border-radius:8px;background:#0d1442;overflow:hidden;margin-top:8px}.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--ac),var(--cy))}
+.rings{display:flex;gap:14px;flex-wrap:wrap}.ring{text-align:center;width:92px;font-size:12px}.ring svg{width:76px;height:76px}.ring span{color:var(--mu);display:block}
+.row{display:flex;gap:8px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.row:first-of-type{border-top:0}.row .g{flex:1;min-width:0}.row .g small{color:var(--mu);display:block}
+.done .t{text-decoration:line-through;opacity:.6}
+.tag{font-size:11px;padding:2px 8px;border-radius:20px;background:#27337a}
+.p-high{color:var(--rd)}.p-med{color:var(--or)}.p-low{color:var(--gr)}
+.form{display:grid;gap:8px;grid-template-columns:1fr 1fr}.form .w{grid-column:1/-1}
+.empty{color:var(--mu);padding:10px 0;font-size:14px}
+.chk{width:26px;height:26px;min-height:26px;padding:0;flex:none;border-radius:8px;background:#0d1442;border:2px solid var(--line)}
+.done .chk{background:var(--gr);border-color:var(--gr)}
+.why{border-left:3px solid var(--pu);padding-left:10px;color:var(--mu);margin-top:6px}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:90px;background:#000c;padding:10px 16px;border-radius:10px;display:none;z-index:9}
+header input{margin-top:10px;border-radius:22px}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center;font-size:13px}
+.cal b{font-weight:400;color:var(--mu);font-size:11px}
+.cal button{min-height:36px;padding:0;background:none;border-radius:50%;position:relative}
+.cal .td{background:var(--ac)}.cal .sel{outline:2px solid var(--cy)}
+.cal i{position:absolute;bottom:3px;left:50%;width:4px;height:4px;margin-left:-2px;border-radius:50%;background:var(--or)}
+.qa{display:grid;grid-template-columns:1fr 1fr;gap:8px}.qa button{background:var(--card2);border:1px solid var(--line)}
+nav .sec{display:none}nav .more{display:flex}.brand,.goal{display:none}.hero{background:linear-gradient(120deg,#2a2c8f,#4b2a8f 60%,#1d3d8f)}.hero h2{font-size:20px;margin:2px 0}.hero p{font-style:italic;color:#d6dcff}.hero small{color:#b9c3f5}
+@media(min-width:800px){
+body{padding:0 0 0 210px}
+nav{top:0;right:auto;width:210px;flex-direction:column;border-top:0;border-right:1px solid var(--line);padding:16px 8px}
+nav button{flex:none;flex-direction:row;gap:10px;font-size:15px;justify-content:flex-start;padding:0 14px;border-radius:10px;min-height:46px}
+nav button.on{background:var(--card2)}
+.stats{grid-template-columns:repeat(4,1fr)}nav .sec{display:flex}nav .more{display:none}.brand{display:block;padding:4px 10px 14px}.brand b{font-size:18px;display:block}.brand small{color:var(--mu)}.goal{display:block;margin-top:auto;padding:14px;border:1px solid var(--line);border-radius:14px;font-size:13px;color:var(--mu)}.goal b{color:var(--tx);font-size:15px}}
+@media(prefers-reduced-motion:no-preference){.bar i{transition:width .5s}}
 </style>
 </head>
 <body>
-<header><div><h1>🎯 SSC CGL 2027</h1><div class="sub" id="today"></div></div><div class="card" style="margin:0;padding:8px 12px">🔥 <b id="streak">0</b> day streak</div></header>
-
-<section class="pg on" id="home">
- <div class="grid">
-  <div class="card"><div class="sub">Today's goals</div><div class="big" id="hGoals">0/0</div><div class="bar"><i id="hBar" style="width:0"></i></div></div>
-  <div class="card"><div class="sub">Study time today</div><div class="big" id="hTime">0h 0m</div></div>
-  <div class="card"><div class="sub">Last mock score</div><div class="big" id="hMock">–</div></div>
-  <div class="card"><div class="sub">Revisions due</div><div class="big" id="hRev">0</div></div>
- </div>
- <h2>Smart suggestion</h2><div class="card" id="hTip"></div>
- <h2>Subject progress</h2><div class="card" id="hSubj"></div>
-</section>
-
-<section class="pg" id="tracker">
- <h2>Add daily goal</h2>
- <div class="card">
-  <select id="gSub"></select>
-  <input id="gTxt" placeholder="Topic e.g. Percentage – 20 PYQs">
-  <input id="gMin" type="number" placeholder="Planned minutes (e.g. 90)">
-  <button onclick="addGoal()">Add goal</button>
- </div>
- <h2>Today</h2><div class="card" id="gList"></div>
- <h2>Backlog (unfinished earlier)</h2><div class="card" id="bList"></div>
-</section>
-
-<section class="pg" id="tests">
- <h2>Add mock test</h2>
- <div class="card">
-  <input id="tName" placeholder="Test name (e.g. Tier 1 Mock 5)">
-  <input id="tScore" type="number" placeholder="Your score">
-  <input id="tTotal" type="number" placeholder="Total marks (e.g. 200)" value="200">
-  <input id="tMin" type="number" placeholder="Time taken (minutes)">
-  <button onclick="addTest()">Save test</button>
- </div>
- <h2>Score trend</h2><div class="card"><div class="bars" id="tBars"></div><div class="sub" id="tAvg" style="margin-top:8px"></div></div>
- <h2>History</h2><div class="card" id="tList"></div>
-</section>
-
-<section class="pg" id="errors">
- <h2>Add to error notebook</h2>
- <div class="card">
-  <select id="eSub"></select>
-  <textarea id="eQ" rows="2" placeholder="Question / concept you got wrong"></textarea>
-  <select id="eWhy"><option>Concept gap</option><option>Silly mistake</option><option>Time pressure</option><option>Formula forgotten</option><option>Guessed</option></select>
-  <button onclick="addErr()">Save error</button>
- </div>
- <h2>Errors</h2><div class="card" id="eList"></div>
-</section>
-
-<section class="pg" id="revise">
- <h2>Add topic to revision</h2>
- <div class="card">
-  <select id="rSub"></select>
-  <input id="rTxt" placeholder="Topic you just studied">
-  <button onclick="addRev()">Start 1-3-7-30 cycle</button>
- </div>
- <h2>Due today</h2><div class="card" id="rDue"></div>
- <h2>Upcoming</h2><div class="card" id="rUp"></div>
-</section>
-
-<section class="pg" id="more">
- <h2>Focus timer</h2>
- <div class="card">
-  <div class="timer" id="tm">25:00</div>
-  <div class="grid"><button onclick="tStart()">Start / Pause</button><button class="g" onclick="tReset()">Reset</button></div>
-  <select id="tLen" onchange="tReset()"><option value="25">25 min focus</option><option value="45">45 min focus</option><option value="5">5 min break</option></select>
-  <div class="sub">Finished focus sessions are added to today's study time.</div>
- </div>
- <h2>Quick capture</h2>
- <div class="card"><textarea id="qn" rows="3" placeholder="Formula, note, or idea…"></textarea><button onclick="addNote()">Save note</button><div id="nList"></div></div>
- <h2>Backup</h2>
- <div class="card">
-  <div class="sub" style="margin-bottom:8px">Data lives in this browser. Export a backup regularly.</div>
-  <div class="grid"><button onclick="exportData()">Export backup</button><button class="g" onclick="document.getElementById('imp').click()">Import backup</button></div>
-  <input id="imp" type="file" accept=".json" style="display:none" onchange="importData(event)">
- </div>
-</section>
-
-<nav>
- <button class="on" data-p="home">🏠<br>Home</button>
- <button data-p="tracker">✅<br>Tracker</button>
- <button data-p="tests">📝<br>Tests</button>
- <button data-p="errors">❌<br>Errors</button>
- <button data-p="revise">🔁<br>Revise</button>
- <button data-p="more">⋯<br>More</button>
-</nav>
-
+<header><h1 id="title">SSC CGL 2027</h1><p id="sub"></p><input id="q" type="search" placeholder="Search topics, tasks, mistakes…" aria-label="Search" oninput="doSearch(this.value)"></header>
+<main id="app"></main>
+<nav id="nav"></nav>
+<div id="toast" role="status"></div>
 <script>
-const SUBJ=["Maths","Reasoning","English","GS / GA","Science","Biology"];
-const GAPS=[1,3,7,30];
+"use strict";
 const KEY="sscplanner.v1";
-let S={goals:[],tests:[],errors:[],revs:[],notes:[],mins:{},days:[]};
-try{const r=localStorage.getItem(KEY);if(r)S=Object.assign(S,JSON.parse(r))}catch(e){}
-const $=id=>document.getElementById(id);
-const iso=d=>d.toISOString().slice(0,10);
-const TODAY=iso(new Date());
-const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){alert("Could not save. Storage may be blocked.")}render()};
-const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const uid=()=>Date.now()+Math.random();
-const hm=m=>Math.floor(m/60)+"h "+(m%60)+"m";
-const addDays=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return iso(x)};
+const DAY=864e5;
+const iso=d=>{const x=new Date(d);return x.getFullYear()+"-"+String(x.getMonth()+1).padStart(2,"0")+"-"+String(x.getDate()).padStart(2,"0")};
+const today=()=>iso(Date.now());
+const addDays=(s,n)=>iso(new Date(s+"T12:00:00").getTime()+n*DAY);
+const uid=()=>Math.random().toString(36).slice(2,10);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const $=s=>document.querySelector(s);
 
-document.querySelectorAll("select[id$=Sub]").forEach(s=>s.innerHTML=SUBJ.map(x=>`<option>${x}</option>`).join(""));
-$("today").textContent=new Date().toDateString();
+const DEFAULTS=()=>({
+  subjects:[
+    {id:"maths",name:"Maths",color:"#22d3ee"},{id:"reasoning",name:"Reasoning",color:"#9b6bff"},
+    {id:"english",name:"English",color:"#34d399"},{id:"ga",name:"General Awareness",color:"#fb923c"},
+    {id:"gs",name:"General Studies",color:"#f472b6"},{id:"science",name:"Science",color:"#4f8cff"}],
+  topics:[],tasks:[],tests:[],errors:[],
+  settings:{targetHours:8,intervals:[1,3,7,14,30],markCorrect:2,markWrong:0.5}
+});
+let S;
+try{S=JSON.parse(localStorage.getItem(KEY))||DEFAULTS()}catch(e){S=DEFAULTS()}
+S.errors=S.errors||[];
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){toast("Could not save: storage is full or blocked.")}}
+function toast(m){const t=$("#toast");t.textContent=m;t.style.display="block";clearTimeout(toast.t);toast.t=setTimeout(()=>t.style.display="none",2600)}
+const subj=id=>S.subjects.find(s=>s.id===id)||{name:"Other",color:"#9aa8d8"};
+const subjOpts=sel=>S.subjects.map(s=>`<option value="${esc(s.id)}" ${s.id===sel?"selected":""}>${esc(s.name)}</option>`).join("");
 
-document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{
- document.querySelectorAll("nav button").forEach(x=>x.classList.toggle("on",x===b));
- document.querySelectorAll(".pg").forEach(p=>p.classList.toggle("on",p.id===b.dataset.p));
- scrollTo(0,0)});
-
-function addGoal(){const t=$("gTxt").value.trim();if(!t)return alert("Type a topic first.");
- S.goals.push({id:uid(),date:TODAY,sub:$("gSub").value,txt:t,min:+$("gMin").value||60,done:false});
- $("gTxt").value="";$("gMin").value="";save()}
-function toggleGoal(id){const g=S.goals.find(x=>x.id==id);g.done=!g.done;
- S.mins[g.date]=(S.mins[g.date]||0)+(g.done?g.min:-g.min);if(S.mins[g.date]<0)S.mins[g.date]=0;
- if(g.done&&!S.days.includes(TODAY))S.days.push(TODAY);save()}
-function moveGoal(id){S.goals.find(x=>x.id==id).date=TODAY;save()}
-function delGoal(id){S.goals=S.goals.filter(x=>x.id!=id);save()}
-
-function addTest(){const n=$("tName").value.trim(),sc=$("tScore").value,tt=+$("tTotal").value;
- if(!n||sc===""||!tt)return alert("Enter name, score and total marks.");
- S.tests.push({id:uid(),date:TODAY,name:n,score:+sc,total:tt,min:+$("tMin").value||0});
- ["tName","tScore","tMin"].forEach(i=>$(i).value="");save()}
-function delTest(id){S.tests=S.tests.filter(x=>x.id!=id);save()}
-
-function addErr(){const q=$("eQ").value.trim();if(!q)return alert("Describe the question first.");
- S.errors.push({id:uid(),date:TODAY,sub:$("eSub").value,q,why:$("eWhy").value,fixed:false});$("eQ").value="";save()}
-function fixErr(id){const e=S.errors.find(x=>x.id==id);e.fixed=!e.fixed;save()}
-function delErr(id){S.errors=S.errors.filter(x=>x.id!=id);save()}
-
-function addRev(){const t=$("rTxt").value.trim();if(!t)return alert("Type a topic first.");
- S.revs.push({id:uid(),sub:$("rSub").value,txt:t,start:TODAY,stage:0,last:TODAY});$("rTxt").value="";save()}
-const dueDate=r=>addDays(r.last,GAPS[r.stage]);
-function doneRev(id){const r=S.revs.find(x=>x.id==id);r.last=TODAY;r.stage++;save()}
-function delRev(id){S.revs=S.revs.filter(x=>x.id!=id);save()}
-
-function addNote(){const t=$("qn").value.trim();if(!t)return;S.notes.unshift({id:uid(),t,date:TODAY});$("qn").value="";save()}
-function delNote(id){S.notes=S.notes.filter(x=>x.id!=id);save()}
-
-function exportData(){const a=document.createElement("a");
- a.href=URL.createObjectURL(new Blob([JSON.stringify(S)],{type:"application/json"}));
- a.download="planner-backup-"+TODAY+".json";a.click()}
-function importData(ev){const f=ev.target.files[0];if(!f)return;const r=new FileReader();
- r.onload=()=>{try{S=Object.assign(S,JSON.parse(r.result));save();alert("Backup restored.")}catch(e){alert("That file is not a valid backup.")}};r.readAsText(f)}
-
-/* focus timer */
-let left=25*60,tid=null;
-const showT=()=>$("tm").textContent=String(Math.floor(left/60)).padStart(2,"0")+":"+String(left%60).padStart(2,"0");
-function tStart(){if(tid){clearInterval(tid);tid=null;return}
- tid=setInterval(()=>{left--;showT();if(left<=0){clearInterval(tid);tid=null;
-  const m=+$("tLen").value;if(m>5){S.mins[TODAY]=(S.mins[TODAY]||0)+m;save()}
-  if(navigator.vibrate)navigator.vibrate([300,100,300]);alert("Time is up!");tReset()}},1000)}
-function tReset(){clearInterval(tid);tid=null;left=+$("tLen").value*60;showT()}
-
-function empty(t){return `<div class="empty">${t}</div>`}
-function render(){
- const tg=S.goals.filter(g=>g.date==TODAY),dn=tg.filter(g=>g.done).length;
- $("hGoals").textContent=dn+"/"+tg.length;$("hBar").style.width=(tg.length?dn/tg.length*100:0)+"%";
- $("hTime").textContent=hm(S.mins[TODAY]||0);
- const lt=S.tests[S.tests.length-1];$("hMock").textContent=lt?Math.round(lt.score/lt.total*100)+"%":"–";
- const due=S.revs.filter(r=>r.stage<GAPS.length&&dueDate(r)<=TODAY);$("hRev").textContent=due.length;
- let st=0,d=new Date();if(!S.days.includes(iso(d)))d.setDate(d.getDate()-1);
- while(S.days.includes(iso(d))){st++;d.setDate(d.getDate()-1)}$("streak").textContent=st;
-
- /* subject progress + suggestion */
- const sp=SUBJ.map(s=>{const a=S.goals.filter(g=>g.sub==s);return{s,n:a.length,p:a.length?Math.round(a.filter(g=>g.done).length/a.length*100):0}});
- $("hSubj").innerHTML=sp.map(x=>`<div class="row"><span class="t">${x.s}</span><span class="sub">${x.n} goals</span><b>${x.p}%</b></div>`).join("");
- const weak=sp.filter(x=>x.n).sort((a,b)=>a.p-b.p)[0];
- let tip="Add today's goals in the Tracker tab to get started.";
- if(due.length)tip=`Revise ${due.length} due topic${due.length>1?"s":""} first (Revise tab).`;
- else if(weak&&weak.p<60)tip=`${weak.s} is your weakest subject (${weak.p}%). Give it your first study block today.`;
- else if(!tg.length)tip="Plan today: add 4–6 goals across Maths, Reasoning, English and GS.";
- else if(dn<tg.length)tip=`${tg.length-dn} goal${tg.length-dn>1?"s":""} left today. Start a 25 min focus session.`;
- else tip="All goals done. Review your error notebook for 15 minutes.";
- $("hTip").textContent=tip;
-
- $("gList").innerHTML=tg.length?tg.map(g=>`<div class="row"><button class="chk ${g.done?"on":""}" onclick="toggleGoal(${g.id})"></button><div class="t"><span class="tag">${g.sub}</span> ${esc(g.txt)}</div><span class="sub">${g.min}m</span><button class="d" onclick="delGoal(${g.id})">✕</button></div>`).join(""):empty("No goals yet. Add one above.");
- const bl=S.goals.filter(g=>g.date<TODAY&&!g.done);
- $("bList").innerHTML=bl.length?bl.map(g=>`<div class="row"><div class="t"><span class="tag">${g.sub}</span> ${esc(g.txt)}<div class="sub">from ${g.date}</div></div><button class="g" onclick="moveGoal(${g.id})">Move to today</button></div>`).join(""):empty("No backlog. Nice.");
-
- const T=S.tests,mx=Math.max(1,...T.map(t=>t.score/t.total));
- $("tBars").innerHTML=T.length?T.slice(-8).map(t=>{const p=t.score/t.total;return `<div style="height:${p/mx*100}%"><span>${Math.round(p*100)}</span></div>`}).join(""):empty("No tests yet");
- $("tAvg").textContent=T.length?`Average ${Math.round(T.reduce((a,t)=>a+t.score/t.total,0)/T.length*100)}% over ${T.length} test${T.length>1?"s":""}`:"";
- $("tList").innerHTML=T.length?T.slice().reverse().map(t=>`<div class="row"><div class="t">${esc(t.name)}<div class="sub">${t.date}${t.min?" · "+t.min+" min":""}</div></div><b>${t.score}/${t.total}</b><button class="d" onclick="delTest(${t.id})">✕</button></div>`).join(""):empty("Save your first mock test above.");
-
- $("eList").innerHTML=S.errors.length?S.errors.slice().reverse().map(e=>`<div class="row"><button class="chk ${e.fixed?"on":""}" onclick="fixErr(${e.id})"></button><div class="t"><span class="tag">${e.sub}</span> <span class="tag">${e.why}</span><div>${esc(e.q)}</div></div><button class="d" onclick="delErr(${e.id})">✕</button></div>`).join(""):empty("No errors logged. Add wrong questions after each test.");
-
- $("rDue").innerHTML=due.length?due.map(r=>`<div class="row"><div class="t"><span class="tag">${r.sub}</span> ${esc(r.txt)}<div class="sub">Revision ${r.stage+1} of 4</div></div><button onclick="doneRev(${r.id})">Done</button></div>`).join(""):empty("Nothing due today.");
- const up=S.revs.filter(r=>r.stage<GAPS.length&&dueDate(r)>TODAY);
- $("rUp").innerHTML=up.length?up.map(r=>`<div class="row"><div class="t">${esc(r.txt)}<div class="sub">${r.sub} · due ${dueDate(r)}</div></div><button class="d" onclick="delRev(${r.id})">✕</button></div>`).join(""):empty("No upcoming revisions.");
- $("nList").innerHTML=S.notes.map(n=>`<div class="row"><div class="t">${esc(n.t)}<div class="sub">${n.date}</div></div><button class="d" onclick="delNote(${n.id})">✕</button></div>`).join("");
+/* ---------- derived data (everything computed from records) ---------- */
+function stats(){
+  const t=today(),tasks=S.tasks.filter(x=>x.date===t);
+  const mins=tasks.reduce((a,x)=>a+(+x.actual||0),0);
+  const plan=tasks.reduce((a,x)=>a+(+x.plan||0),0);
+  const done=tasks.filter(x=>x.status==="done").length;
+  const doneTopics=S.topics.filter(x=>x.status==="done").length;
+  const revs=[];S.topics.forEach(tp=>(tp.revs||[]).forEach((r,i)=>{if(!r.doneOn)revs.push({tp,r,i})}));
+  const due=revs.filter(x=>x.r.due<=t).sort((a,b)=>a.r.due<b.r.due?-1:1);
+  const upcoming=revs.filter(x=>x.r.due>t).sort((a,b)=>a.r.due<b.r.due?-1:1);
+  return{t,tasks,mins,plan,done,doneTopics,total:S.topics.length,pending:S.topics.length-doneTopics,due,upcoming,streak:streak()};
 }
-showT();render();
+function streak(){
+  const days=new Set(S.tasks.filter(x=>x.status==="done"||+x.actual>0).map(x=>x.date));
+  let d=today(),n=0;if(!days.has(d))d=addDays(d,-1);
+  while(days.has(d)){n++;d=addDays(d,-1)}return n;
+}
+function subjectStats(id){
+  const tp=S.topics.filter(x=>x.subj===id),done=tp.filter(x=>x.status==="done").length;
+  const ts=S.tests.filter(x=>x.subj===id&&x.att>0);
+  const att=ts.reduce((a,x)=>a+x.att,0),cor=ts.reduce((a,x)=>a+x.cor,0);
+  return{total:tp.length,done,pct:tp.length?Math.round(done/tp.length*100):0,acc:att?Math.round(cor/att*100):null};
+}
+function recommend(){
+  const st=stats();
+  if(st.due.length){const d=st.due[0];return{title:`Revise ${d.tp.title}`,why:`Revision was due ${d.r.due===st.t?"today":"on "+d.r.due}. Revising on schedule is what makes the topic stick.`,subj:d.tp.subj}}
+  const cands=S.subjects.map(s=>({s,ss:subjectStats(s.id)})).filter(x=>x.ss.total>x.ss.done);
+  if(!cands.length)return null;
+  cands.forEach(c=>c.score=(c.ss.acc!==null?100-c.ss.acc:40)+(100-c.ss.pct)*.3);
+  cands.sort((a,b)=>b.score-a.score);
+  const c=cands[0],tp=S.topics.find(x=>x.subj===c.s.id&&x.status!=="done");
+  const why=c.ss.acc!==null?`Your accuracy in ${c.s.name} is ${c.ss.acc}% from recorded tests, and ${c.ss.pct}% of topics are done.`:`${c.s.name} is only ${c.ss.pct}% complete and has no test data yet.`;
+  return{title:`Study ${tp.title} (${c.s.name})`,why,subj:c.s.id};
+}
+
+/* ---------- views ---------- */
+const VIEWS={home:["Home","⌂"],tracker:["Tracker","✓"],syllabus:["Syllabus","☰"],revision:["Revision","↻"],tests:["Tests","✎",1],errors:["Errors","✗",1],settings:["Settings","⚙",1]};
+const SEC=["tests","errors","settings","more"];
+const BRAND=`<div class="brand"><b>SSC CGL 2027</b><small>Study Planner &amp; Tracker</small></div>`;
+const GOAL=`<div class="goal"><b>Big Goals</b><br>Require daily action<br><i>"Discipline today = success tomorrow"</i></div>`;
+const QUOTES=["Small steps every day lead to big results.","Consistency beats intensity.","One focused hour is worth three distracted ones.","Revise today, remember on exam day.","Progress, not perfection.","Your future rank is built by today's tasks."];
+const greet=()=>{const h=new Date().getHours();return h<12?"Good morning":h<17?"Good afternoon":"Good evening"};
+let calM=today().slice(0,7),searchQ="",prevView="home",errQ="",errCat="",errOpen=false;
+const CATS=["Conceptual misunderstanding","Calculation error","Misreading the question","Incorrect rule application","Vocabulary or meaning confusion","Guessing","Time-management error"];
+let view="home",filterDate=today();
+function ring(pct,color,label,sub){
+  const r=30,c=2*Math.PI*r;
+  return `<div class="ring"><svg viewBox="0 0 76 76"><circle cx="38" cy="38" r="${r}" fill="none" stroke="#0d1442" stroke-width="8"/><circle cx="38" cy="38" r="${r}" fill="none" stroke="${color}" stroke-width="8" stroke-linecap="round" stroke-dasharray="${c*pct/100} ${c}" transform="rotate(-90 38 38)"/><text x="38" y="43" text-anchor="middle" fill="#eaf0ff" font-size="15" font-weight="600">${pct}%</text></svg><b>${esc(label)}</b><span>${sub}</span></div>`;
+}
+function taskRow(x,edit){
+  const s=subj(x.subj);
+  return `<div class="row ${x.status==="done"?"done":""}">
+  <button class="chk" aria-label="Toggle complete" onclick="toggleTask('${x.id}')"></button>
+  <div class="g"><div class="t">${esc(x.title)}</div><small><span style="color:${s.color}">${esc(s.name)}</span> · ${x.plan}m planned${+x.actual?` · ${x.actual}m actual`:""} · <span class="p-${x.prio}">${x.prio}</span>${x.status==="skipped"?" · skipped":""}</small></div>
+  ${edit?`<input type="number" min="0" style="width:70px" value="${x.actual||""}" placeholder="min" aria-label="Actual minutes" onchange="setActual('${x.id}',this.value)">
+  <button class="ghost sm" onclick="skipTask('${x.id}')">Skip</button><button class="ghost sm" aria-label="Delete" onclick="delTask('${x.id}')">✕</button>`:""}</div>`;
+}
+function weekBars(){
+  const days=[...Array(7)].map((_,i)=>addDays(today(),i-6));
+  const v=days.map(d=>S.tasks.filter(x=>x.date===d).reduce((a,x)=>a+(+x.actual||0),0));
+  const max=Math.max(60,...v);
+  if(!v.some(x=>x))return `<p class="empty">No study time logged yet. Enter actual minutes on a task in the Tracker.</p>`;
+  return `<svg viewBox="0 0 280 110" width="100%" role="img" aria-label="Study minutes, last 7 days">${v.map((m,i)=>{const h=m/max*70;return `<rect x="${i*40+6}" y="${80-h}" width="28" height="${h}" rx="5" fill="#4f8cff"/><text x="${i*40+20}" y="${74-h}" text-anchor="middle" font-size="10" fill="#9aa8d8">${m||""}</text><text x="${i*40+20}" y="100" text-anchor="middle" font-size="10" fill="#9aa8d8">${days[i].slice(8)}</text>`}).join("")}</svg>`;
+}
+function accLine(){
+  const ts=[...S.tests].filter(x=>x.att>0).sort((a,b)=>a.date<b.date?-1:1).slice(-10);
+  if(ts.length<2)return `<p class="empty">Add at least two mock tests to see your accuracy trend.</p>`;
+  const pts=ts.map((x,i)=>`${10+i*(260/(ts.length-1))},${90-(x.cor/x.att)*80}`).join(" ");
+  return `<svg viewBox="0 0 280 100" width="100%" role="img" aria-label="Accuracy trend"><polyline points="${pts}" fill="none" stroke="#22d3ee" stroke-width="3"/></svg>`;
+}
+function renderHome(){
+  const st=stats(),tgt=S.settings.targetHours*60,pct=tgt?Math.min(100,Math.round(st.mins/tgt*100)):0;
+  const overall=st.total?Math.round(st.doneTopics/st.total*100):0,rec=recommend();
+  return `<div class="card hero"><small>${new Date().toLocaleDateString(undefined,{weekday:"short",day:"2-digit",month:"short",year:"numeric"})} · ${st.streak}-day streak</small><h2>${greet()}, Aspirant</h2><p>"${QUOTES[Math.floor(Date.now()/DAY)%QUOTES.length]}"</p></div>
+  <div class="stats">
+  <div class="card stat"><small>Daily target</small><strong>${+(st.mins/60).toFixed(1)} / ${S.settings.targetHours} h</strong><div class="bar"><i style="width:${pct}%"></i></div><small>${pct}% of target</small></div>
+  <div class="card stat"><small>Study time today</small><strong>${Math.floor(st.mins/60)}h ${st.mins%60}m</strong><small>${st.done}/${st.tasks.length} tasks done</small></div>
+  <div class="card stat"><small>Overall progress</small><strong>${overall}%</strong><div class="bar"><i style="width:${overall}%;background:linear-gradient(90deg,var(--pu),var(--ac))"></i></div><small>${st.doneTopics} / ${st.total} topics</small></div>
+  <div class="card stat"><small>Backlog</small><strong>${st.pending}</strong><small>pending topics</small></div></div>
+  <div class="grid"><div>
+  <div class="card"><h2>Subject progress</h2><div class="rings">${S.subjects.map(s=>{const x=subjectStats(s.id);return ring(x.pct,s.color,s.name.replace("General ","G. "),`${x.done}/${x.total}${x.acc!==null?" · "+x.acc+"% acc":""}`)}).join("")}</div>${st.total?"":`<p class="empty">Add topics in Syllabus to see progress.</p>`}</div>
+  <div class="card"><h2>Study time, last 7 days (min)</h2>${weekBars()}</div>
+  <div class="card"><h2>Accuracy trend</h2>${accLine()}</div></div><div>
+  <div class="card"><h2>Today's plan</h2>${st.tasks.map(x=>taskRow(x,false)).join("")||`<p class="empty">Nothing planned for today. Add a task in Tracker.</p>`}<button class="ghost sm" onclick="go('tracker')">Open Tracker</button></div>
+  <div class="card"><h2>Study recommendation</h2>${rec?`<b>${esc(rec.title)}</b><p class="why">${esc(rec.why)}</p><button class="sm" style="margin-top:8px" onclick="addRec()">Add to today's plan</button>`:`<p class="empty">Add syllabus topics and I'll suggest what to study next.</p>`}<h2 style="margin-top:14px">Your next steps</h2>${steps().map((x,k)=>`<div class="row"><span class="tag">${k+1}</span><div class="g">${esc(x)}</div></div>`).join("")||`<p class="empty">You're caught up.</p>`}</div>
+  <div class="card"><h2>Keep going</h2><p>You're ${overall}% through your syllabus.</p><div class="bar"><i style="width:${overall}%;background:linear-gradient(90deg,var(--or),#fbbf24)"></i></div></div>
+  ${calCard()}${quickCard()}<div class="card"><h2>Next revisions</h2>${nextRev()}<button class="ghost sm" onclick="go('revision')">Open Revision</button></div>${weakCard()}${remCard()}</div></div>`;
+}
+function renderTracker(){
+  const f=filterDate,list=S.tasks.filter(x=>x.date===f);
+  const planned=list.reduce((a,x)=>a+(+x.plan||0),0),act=list.reduce((a,x)=>a+(+x.actual||0),0);
+  return `<div class="card"><h2>Add task</h2><form class="form" onsubmit="addTask(event)">
+  <input class="w" name="title" placeholder="e.g. Percentage – Lecture 12" required maxlength="120">
+  <select name="subj" aria-label="Subject">${subjOpts()}</select><input name="plan" type="number" min="5" max="480" value="60" aria-label="Planned minutes">
+  <select name="prio" aria-label="Priority"><option value="high">High</option><option value="med" selected>Medium</option><option value="low">Low</option></select>
+  <input name="date" type="date" value="${f}" aria-label="Date"><button class="w">Add task</button></form></div>
+  <div class="card"><h2>Tasks</h2><input type="date" value="${f}" onchange="filterDate=this.value;render()" aria-label="Filter by date">
+  <p style="color:var(--mu);margin:8px 0">Planned ${planned} min · Actual ${act} min</p>
+  ${list.map(x=>taskRow(x,true)).join("")||`<p class="empty">No tasks on this date.</p>`}</div>`;
+}
+function renderSyllabus(){
+  return `<div class="card"><h2>Bulk add topics</h2><p style="color:var(--mu);font-size:13px;margin-bottom:8px">One topic per line: <code>Chapter | Topic</code></p>
+  <form onsubmit="bulkAdd(event)" class="form"><select name="subj" class="w" aria-label="Subject">${subjOpts()}</select>
+  <textarea class="w" name="lines" rows="5" placeholder="Percentage | Basics&#10;Percentage | Successive change&#10;Profit & Loss | Discount"></textarea><button class="w">Add topics</button></form></div>
+  ${S.subjects.map(s=>{const tp=S.topics.filter(x=>x.subj===s.id);if(!tp.length)return"";
+  return `<div class="card"><h2 style="color:${s.color}">${esc(s.name)}</h2>${tp.map(x=>`<div class="row ${x.status==="done"?"done":""}"><button class="chk" aria-label="Toggle topic done" onclick="toggleTopic('${x.id}')"></button><div class="g"><div class="t">${esc(x.title)}</div><small>${esc(x.chapter)}${x.doneOn?" · done "+x.doneOn:""}</small></div><button class="ghost sm" aria-label="Delete topic" onclick="delTopic('${x.id}')">✕</button></div>`).join("")}</div>`}).join("")}`;
+}
+function renderRevision(){
+  const st=stats(),row=(x,late)=>`<div class="row"><div class="g"><div>${esc(x.tp.title)}</div><small>${esc(subj(x.tp.subj).name)} · due ${x.r.due}</small></div>${late?`<button class="sm" onclick="revise('${x.tp.id}',${x.i},true)">Recalled</button><button class="ghost sm" onclick="revise('${x.tp.id}',${x.i},false)">Forgot</button>`:""}</div>`;
+  return `<div class="card"><h2>Due now (${st.due.length})</h2>${st.due.map(x=>row(x,true)).join("")||`<p class="empty">Nothing due. Marking a topic done in Syllabus schedules revisions at ${S.settings.intervals.join(", ")} days.</p>`}</div>
+  <div class="card"><h2>Upcoming (${st.upcoming.length})</h2>${st.upcoming.slice(0,15).map(x=>row(x,false)).join("")||`<p class="empty">No upcoming revisions.</p>`}</div>`;
+}
+function renderTests(){
+  const list=[...S.tests].sort((a,b)=>a.date<b.date?1:-1);
+  return `<div class="card"><h2>Record mock test</h2><form class="form" onsubmit="addTest(event)">
+  <input class="w" name="name" placeholder="Test name" required maxlength="80"><select name="subj" aria-label="Subject">${subjOpts()}</select><input type="date" name="date" value="${today()}" aria-label="Date">
+  <input name="att" type="number" min="1" placeholder="Attempted" required><input name="cor" type="number" min="0" placeholder="Correct" required>
+  <button class="w">Save test</button></form><p class="empty">Marks use +${S.settings.markCorrect} per correct, −${S.settings.markWrong} per wrong (change in Settings).</p></div>
+  <div class="card"><h2>History</h2>${list.map(x=>{const w=x.att-x.cor;const m=(x.cor*S.settings.markCorrect-w*S.settings.markWrong).toFixed(1);return `<div class="row"><div class="g"><div>${esc(x.name)}</div><small>${x.date} · ${esc(subj(x.subj).name)} · ${x.cor}/${x.att} correct · ${Math.round(x.cor/x.att*100)}% · ${m} marks</small></div><button class="ghost sm" aria-label="Delete test" onclick="delTest('${x.id}')">✕</button></div>`}).join("")||`<p class="empty">No tests recorded yet.</p>`}</div>`;
+}
+function renderSettings(){
+  const s=S.settings;
+  return `<div class="card"><h2>Preferences</h2><form class="form" onsubmit="saveSettings(event)">
+  <label class="w">Daily target (hours)<input name="targetHours" type="number" min="1" max="16" step="0.5" value="${s.targetHours}"></label>
+  <label class="w">Revision intervals (days, comma separated)<input name="intervals" value="${s.intervals.join(",")}"></label>
+  <label>Marks per correct<input name="mc" type="number" step="0.25" value="${s.markCorrect}"></label><label>Penalty per wrong<input name="mw" type="number" step="0.25" value="${s.markWrong}"></label>
+  <button class="w">Save settings</button></form></div>
+  <div class="card"><h2>Subjects</h2>${S.subjects.map(x=>`<div class="row"><div class="g">${esc(x.name)}</div><button class="ghost sm" onclick="delSubject('${x.id}')">Remove</button></div>`).join("")}
+  <form class="form" onsubmit="addSubject(event)" style="margin-top:8px"><input name="name" placeholder="New subject" required maxlength="40"><button>Add subject</button></form></div>
+  <div class="card"><h2>Backup</h2><p class="empty">Data is saved only in this browser. Export regularly. Cloud sync is not built yet.</p>
+  <div class="form"><button onclick="exportData()">Export JSON</button><button class="ghost" onclick="$('#imp').click()">Import JSON</button></div>
+  <input id="imp" type="file" accept="application/json" hidden onchange="importData(this.files[0])"></div>`;
+}
+function render(){
+  const f={home:renderHome,tracker:renderTracker,syllabus:renderSyllabus,revision:renderRevision,tests:renderTests,errors:renderErrors,settings:renderSettings,search:renderSearch,more:renderMore}[view];
+  $("#app").innerHTML=f();
+  $("#nav").innerHTML=BRAND+Object.entries(VIEWS).map(([k,v])=>`<button class="${k===view?"on":""} ${v[2]?"sec":""}" onclick="go('${k}')"><b>${v[1]}</b>${v[0]}</button>`).join("")+`<button class="more ${SEC.includes(view)?"on":""}" onclick="go('more')"><b>⋯</b>More</button>`+GOAL;
+  $("#sub").textContent=new Date().toLocaleDateString(undefined,{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+}
+function go(v){view=v;searchQ="";$("#q").value="";render();scrollTo(0,0)}
+
+function steps(){const st=stats(),r=recommend(),l=[];
+ if(r)l.push(r.title);if(st.due.length>1)l.push("Clear "+(st.due.length-1)+" more due revision(s)");
+ const last=S.tests.map(x=>x.date).sort().pop();if(!last||last<addDays(st.t,-7))l.push("Attempt a mock test");
+ const o=S.errors.filter(e=>!e.resolved).length;if(o)l.push("Review "+o+" open mistake(s)");return l}
+function addRec(){const r=recommend();if(!r)return;S.tasks.push({id:uid(),date:today(),subj:r.subj,title:r.title,plan:60,actual:0,status:"pending",prio:"high"});save();render();toast("Added to today's plan")}
+function calCard(){
+ const [y,m]=calM.split("-").map(Number),first=new Date(y,m-1,1),off=(first.getDay()+6)%7,n=new Date(y,m,0).getDate(),has=new Set(S.tasks.map(x=>x.date));
+ let c=["M","T","W","T","F","S","S"].map(d=>`<b>${d}</b>`).join("")+"<span></span>".repeat(off);
+ for(let d=1;d<=n;d++){const k=calM+"-"+String(d).padStart(2,"0");c+=`<button class="${k===today()?"td":""} ${k===filterDate?"sel":""}" onclick="pickDay('${k}')">${d}${has.has(k)?"<i></i>":""}</button>`}
+ return `<div class="card"><div class="row" style="border:0;padding:0 0 8px"><button class="ghost sm" aria-label="Previous month" onclick="calMove(-1)">‹</button><h2 class="g" style="text-align:center;margin:0">${first.toLocaleDateString(undefined,{month:"long",year:"numeric"})}</h2><button class="ghost sm" aria-label="Next month" onclick="calMove(1)">›</button></div><div class="cal">${c}</div></div>`;
+}
+function calMove(n){const [y,m]=calM.split("-").map(Number);calM=iso(new Date(y,m-1+n,1)).slice(0,7);render()}
+function pickDay(k){filterDate=k;go("tracker")}
+function quickCard(){return `<div class="card"><h2>Quick actions</h2><div class="qa"><button onclick="go('tracker')">Add task</button><button onclick="go('tests')">Mock test</button><button onclick="go('errors')">Log mistake</button><button onclick="go('syllabus')">Add topics</button></div></div>`}
+function nextRev(){const st=stats(),l=[...st.due,...st.upcoming].slice(0,4);return l.map(x=>`<div class="row"><div class="g">${esc(x.tp.title)}<small>${esc(subj(x.tp.subj).name)}</small></div><span class="tag">${x.r.due<=st.t?"due":x.r.due.slice(5)}</span></div>`).join("")||`<p class="empty">Mark a topic done in Syllabus to schedule revisions.</p>`}
+function weakCard(){
+ const w=S.subjects.map(s=>({s,a:subjectStats(s.id).acc})).filter(x=>x.a!==null).sort((a,b)=>a.a-b.a).slice(0,4);
+ const er={};S.errors.filter(e=>!e.resolved).forEach(e=>{const k=e.topic||"Unspecified";er[k]=(er[k]||0)+1});
+ const et=Object.entries(er).sort((a,b)=>b[1]-a[1]).slice(0,3);
+ return `<div class="card"><h2>Weak areas</h2>${w.map(x=>`<div style="margin-bottom:8px"><div style="display:flex;justify-content:space-between"><span>${esc(x.s.name)}</span><span>${x.a}%</span></div><div class="bar"><i style="width:${x.a}%;background:${x.s.color}"></i></div></div>`).join("")}${et.map(([k,v])=>`<div class="row"><div class="g">${esc(k)}</div><span class="tag">${v} open</span></div>`).join("")}${w.length||et.length?"":`<p class="empty">Weak areas appear once you record tests or mistakes.</p>`}</div>`;
+}
+function remList(){
+ const st=stats(),r=[];
+ if(st.due.length)r.push(st.due.length+" revision(s) due");
+ const pend=st.tasks.filter(x=>x.status==="pending").length;if(pend)r.push(pend+" task(s) pending today");
+ if(!st.tasks.length)r.push("No plan for today yet");
+ const last=S.tests.map(x=>x.date).sort().pop();if(!last||last<addDays(st.t,-7))r.push("No mock test in the last 7 days");
+ if(st.pending>20)r.push("Backlog review: "+st.pending+" topics pending");
+ return r;
+}
+function remCard(){return `<div class="card"><h2>Reminders</h2>${remList().map(x=>`<div class="row"><div class="g">${esc(x)}</div></div>`).join("")||`<p class="empty">All clear for now.</p>`}<button class="ghost sm" onclick="enableNotif()">Enable phone alerts</button></div>`}
+function enableNotif(){
+ if(!("Notification" in window)){toast("This browser doesn't support notifications.");return}
+ Notification.requestPermission().then(p=>{if(p!=="granted"){toast("Permission not granted.");return}
+  try{new Notification("SSC CGL Planner",{body:remList().join(" · ")||"All clear for now."});toast("Alerts on. They only appear while this page is open.")}catch(e){toast("Allowed, but this browser blocks page notifications.")}})
+}
+function doSearch(v){searchQ=v.trim();if(searchQ){if(view!=="search")prevView=view;view="search"}else if(view==="search")view=prevView;render()}
+function renderSearch(){
+ const q=searchQ.toLowerCase(),h=t=>String(t||"").toLowerCase().includes(q);
+ const sec=(t,a,f)=>a.length?`<div class="card"><h2>${t} (${a.length})</h2>${a.slice(0,20).map(f).join("")}</div>`:"";
+ return sec("Topics",S.topics.filter(x=>h(x.title)||h(x.chapter)||h(subj(x.subj).name)),x=>`<div class="row"><div class="g">${esc(x.title)}<small>${esc(subj(x.subj).name)} · ${esc(x.chapter)} · ${x.status}</small></div></div>`)
+ +sec("Tasks",S.tasks.filter(x=>h(x.title)),x=>`<div class="row"><div class="g">${esc(x.title)}<small>${x.date} · ${x.status}</small></div></div>`)
+ +sec("Mistakes",S.errors.filter(x=>h(x.q)||h(x.topic)||h(x.why)||h(x.right)),x=>`<div class="row"><div class="g">${esc(x.q)}<small>${esc(x.topic)} · ${esc(x.cat)}</small></div></div>`)
+ ||`<p class="empty">No matches for "${esc(searchQ)}".</p>`;
+}
+function renderMore(){return `<div class="card"><h2>More</h2>${["tests","errors","settings"].map(k=>`<div class="row"><button class="ghost g" style="text-align:left" onclick="go('${k}')">${VIEWS[k][1]} ${VIEWS[k][0]}</button></div>`).join("")}</div>`}
+function renderErrors(){
+ const q=errQ.toLowerCase(),cnt={};S.errors.filter(e=>!e.resolved).forEach(e=>cnt[e.topic]=(cnt[e.topic]||0)+1);
+ const list=S.errors.filter(e=>(!errCat||e.cat===errCat)&&(!errOpen||!e.resolved)&&(!q||JSON.stringify(e).toLowerCase().includes(q))).sort((a,b)=>a.date<b.date?1:-1);
+ return `<div class="card"><h2>Log a mistake</h2><form class="form" onsubmit="addError(event)">
+ <textarea class="w" name="q" rows="2" placeholder="Question or short description" required maxlength="300"></textarea>
+ <select name="subj" aria-label="Subject">${subjOpts()}</select><input name="topic" placeholder="Chapter / topic" maxlength="60">
+ <select class="w" name="cat" aria-label="Mistake category">${CATS.map(c=>`<option>${c}</option>`).join("")}</select>
+ <input class="w" name="why" placeholder="Why I chose the wrong answer" maxlength="200"><input class="w" name="right" placeholder="Correct reasoning" maxlength="200"><input class="w" name="ans" placeholder="Correct answer" maxlength="80"><button class="w">Save mistake</button></form></div>
+ <div class="card"><h2>Notebook (${list.length})</h2><div class="form"><input value="${esc(errQ)}" placeholder="Search mistakes" aria-label="Search mistakes" onchange="errQ=this.value;render()"><select aria-label="Category filter" onchange="errCat=this.value;render()"><option value="">All categories</option>${CATS.map(c=>`<option ${c===errCat?"selected":""}>${c}</option>`).join("")}</select>
+ <label class="w"><input type="checkbox" style="width:auto;min-height:0" ${errOpen?"checked":""} onchange="errOpen=this.checked;render()"> Unresolved only</label></div>
+ ${list.map(e=>`<div class="row ${e.resolved?"done":""}" style="align-items:flex-start"><div class="g"><div class="t">${esc(e.q)}</div><small>${esc(subj(e.subj).name)} · ${esc(e.topic)} · ${e.date} · ${esc(e.cat)}${!e.resolved&&cnt[e.topic]>1?` · <span class="p-high">repeated ×${cnt[e.topic]}</span>`:""}</small>${e.why?`<small>Why wrong: ${esc(e.why)}</small>`:""}${e.right?`<small>Reasoning: ${esc(e.right)}</small>`:""}${e.ans?`<small>Answer: ${esc(e.ans)}</small>`:""}<small>Reattempts: ${e.re.length?e.re.map(r=>r.ok?"✓":"✗").join(" "):"none"}</small>
+ <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"><button class="ghost sm" onclick="reattempt('${e.id}',true)">Got it ✓</button><button class="ghost sm" onclick="reattempt('${e.id}',false)">Wrong ✗</button><button class="ghost sm" onclick="errTask('${e.id}')">Revise task</button><button class="ghost sm" onclick="resolveErr('${e.id}')">${e.resolved?"Reopen":"Resolve"}</button><button class="ghost sm" aria-label="Delete" onclick="delErr('${e.id}')">✕</button></div></div></div>`).join("")||`<p class="empty">No mistakes logged yet. Add one after your next mock test.</p>`}</div>`;
+}
+function addError(e){const d=fd(e);S.errors.push({id:uid(),date:today(),subj:d.subj,topic:d.topic.trim(),cat:d.cat,q:d.q.trim(),why:d.why.trim(),right:d.right.trim(),ans:d.ans.trim(),resolved:false,re:[]});save();render();toast("Mistake saved")}
+function reattempt(id,ok){S.errors.find(x=>x.id===id).re.push({date:today(),ok});save();render()}
+function resolveErr(id){const x=S.errors.find(x=>x.id===id);x.resolved=!x.resolved;save();render()}
+function errTask(id){const x=S.errors.find(x=>x.id===id);S.tasks.push({id:uid(),date:today(),subj:x.subj,title:"Revise mistake: "+x.q.slice(0,60),plan:20,actual:0,status:"pending",prio:"high"});save();toast("Added to today's plan")}
+function delErr(id){if(!confirm("Delete this mistake?"))return;S.errors=S.errors.filter(x=>x.id!==id);save();render()}
+/* ---------- actions ---------- */
+const fd=e=>{e.preventDefault();return Object.fromEntries(new FormData(e.target))};
+function addTask(e){const d=fd(e);S.tasks.push({id:uid(),date:d.date||today(),subj:d.subj,title:d.title.trim(),plan:+d.plan||60,actual:0,status:"pending",prio:d.prio});save();filterDate=d.date;render();toast("Task added")}
+function toggleTask(id){const t=S.tasks.find(x=>x.id===id);t.status=t.status==="done"?"pending":"done";if(t.status==="done"&&!+t.actual)t.actual=t.plan;save();render()}
+function setActual(id,v){const t=S.tasks.find(x=>x.id===id);t.actual=Math.max(0,+v||0);if(t.actual>0&&t.status==="pending")t.status=t.actual>=t.plan?"done":"partial";save();render()}
+function skipTask(id){const t=S.tasks.find(x=>x.id===id);t.status="skipped";save();render()}
+function delTask(id){if(!confirm("Delete this task?"))return;S.tasks=S.tasks.filter(x=>x.id!==id);save();render()}
+function bulkAdd(e){const d=fd(e);let n=0;d.lines.split("\n").forEach(l=>{l=l.trim();if(!l)return;const p=l.split("|").map(x=>x.trim());const ch=p.length>1?p[0]:"General",ti=p.length>1?p.slice(1).join(" | "):p[0];if(!ti)return;
+  if(S.topics.some(x=>x.subj===d.subj&&x.chapter===ch&&x.title===ti))return;S.topics.push({id:uid(),subj:d.subj,chapter:ch,title:ti,status:"todo",revs:[]});n++});save();render();toast(n+" topics added (duplicates skipped)")}
+function toggleTopic(id){const t=S.topics.find(x=>x.id===id);
+  if(t.status==="done"){t.status="todo";t.doneOn=null;t.revs=[]}
+  else{t.status="done";t.doneOn=today();t.revs=S.settings.intervals.map(n=>({due:addDays(today(),n),doneOn:null}))}save();render()}
+function delTopic(id){S.topics=S.topics.filter(x=>x.id!==id);save();render()}
+function revise(id,i,ok){const t=S.topics.find(x=>x.id===id);t.revs[i].doneOn=today();t.revs[i].recall=ok?"good":"forgot";
+  if(!ok)t.revs.push({due:addDays(today(),1),doneOn:null});save();render();toast(ok?"Revision logged":"Rescheduled for tomorrow")}
+function addTest(e){const d=fd(e);const att=+d.att,cor=+d.cor;if(cor>att){toast("Correct can't exceed attempted.");return}S.tests.push({id:uid(),name:d.name.trim(),subj:d.subj,date:d.date,att,cor});save();render();toast("Test saved")}
+function delTest(id){S.tests=S.tests.filter(x=>x.id!==id);save();render()}
+function saveSettings(e){const d=fd(e);const iv=d.intervals.split(",").map(x=>+x.trim()).filter(x=>x>0);if(!iv.length){toast("Enter at least one interval.");return}
+  S.settings={targetHours:+d.targetHours||8,intervals:iv,markCorrect:+d.mc,markWrong:+d.mw};save();render();toast("Settings saved")}
+function addSubject(e){const d=fd(e);const cols=["#22d3ee","#9b6bff","#34d399","#fb923c","#f472b6","#4f8cff"];S.subjects.push({id:uid(),name:d.name.trim(),color:cols[S.subjects.length%6]});save();render()}
+function delSubject(id){if(S.topics.some(x=>x.subj===id)&&!confirm("This subject has topics. Remove it anyway? Topics stay but show as Other."))return;S.subjects=S.subjects.filter(x=>x.id!==id);save();render()}
+function exportData(){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(S,null,2)],{type:"application/json"}));a.download="ssc-planner-backup-"+today()+".json";a.click();toast("Backup downloaded")}
+function importData(f){if(!f)return;const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(!Array.isArray(d.subjects)||!Array.isArray(d.topics)||!Array.isArray(d.tasks)||!Array.isArray(d.tests)||!d.settings)throw 0;
+  if(!confirm("Replace all current data with this backup?"))return;S=d;S.errors=S.errors||[];save();render();toast("Backup restored")}catch(e){toast("Invalid backup file. Nothing was changed.")}};r.readAsText(f)}
+render();
 </script>
 </body>
 </html>
